@@ -6,6 +6,11 @@ Version 1.0,  Copyright(c) April, 2025.
 ## Installation
 Clone the repository using git clone command or manual download,
 
+conda create -n myenv python=3.11
+conda activate myenv
+conda install -c conda-forge hmmlearn
+
+
 Install python dependencies (suggested virtual environment)
 
 ## Usage
