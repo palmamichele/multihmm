@@ -1,3 +1,10 @@
+import numpy as np
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
 
 def perform_PCA(D, v_t=0.8):
     """
