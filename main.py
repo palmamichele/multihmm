@@ -1,71 +1,66 @@
 import numpy as np
 import pandas as pd
-import os
 import matplotlib.pyplot as plt
+import traceback
+import warnings
+import os
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from hmmlearn import hmm
-from utils import perform_PCA, state_discretization, apply_global_mapping, percentage_rsmd, percentage_mad, autocorr
-import traceback
+from utils import perform_PCA, state_discretization, apply_global_mapping, percentage_rsmd, percentage_mad, autocorr, hidden_similarities
 
 
 seed=0
 np.random.seed(seed)
+warnings.filterwarnings("ignore")
+
 max_iterations=100
 max_lag = 100 #maximum number of time steps for which autocorrelation is computed
+frequency_step = 1 # number of minutes between consecutive returns 
+M_target = 1000 #upper bound on number of bins
+merge=True
+
+
 
 
 data_file = "data/data.xlsx"
+logs = []
 stock_prices = pd.read_excel(data_file, index_col=0, parse_dates=True)
 stock_prices.index = pd.to_datetime(stock_prices.index) #use the first column as time index 
 N = len(stock_prices.iloc[0]) 
+savepoint_filename = str(merge)+str(frequency_step)+str(M_target)+str(N)
 stock_prices = stock_prices.iloc[:,:N] #filter number of stocks (in case we set it manually)
 days = sorted(set(stock_prices.index.date))
 num_days = len(days)
+original_T = len(stock_prices)
+logs.append(f"{original_T} observations, {num_days} days \n")
+all_stocks_returns = []  #ordered list of returns at desired freq for all n-stocks
 
-stocks_returns = {}  #hashmap indexed by day, containing an ordered list of intra-day returns of the day for all n-stocks
-for day in days:
-    day_stock_prices = stock_prices[stock_prices.index.date == day]
-    r_day = []
-    for (index, row) in enumerate(day_stock_prices.iterrows()):
-        if index==0:
-           continue #skip to next iteration, as there is no previous stock price
-        r_day.append(np.log(stock_prices.iloc[index]/stock_prices.iloc[index-1]))
-    formatted_date = day.strftime('%Y-%m-%d')
-    stocks_returns[formatted_date]=r_day
+for i in range(frequency_step, original_T, frequency_step):
+    all_stocks_returns.append(np.log(stock_prices.iloc[i]/stock_prices.iloc[i-frequency_step]))
 
-all_stock_returns = []  #D
-for day in stocks_returns.keys(): 
-    for el in stocks_returns[day]:
-        all_stock_returns.append(el)
-
-#build matrix of intra-day stock returns across all days
-all_stock_returns = np.array(all_stock_returns).reshape(-1, N)  #first column is referred to first stock, second column to second stock, ...
-K = perform_PCA(all_stock_returns)
-all_stock_returns = np.array(all_stock_returns)
-
-z_min = np.min(all_stock_returns) - 3*np.std(all_stock_returns)
-z_max = np.max(all_stock_returns) + 3*np.std(all_stock_returns)
-delta = 0.0001
-
-
-
-
-discretized_returns = np.zeros_like(all_stock_returns)
+T = len(all_stocks_returns)
+all_stocks_returns = np.vstack(all_stocks_returns)   #first column is referred to first stock, second column to second stock, ...
+K = perform_PCA(all_stocks_returns)
+z_min = np.min(all_stocks_returns) - 3*np.std(all_stocks_returns)
+z_max = np.max(all_stocks_returns) + 3*np.std(all_stocks_returns)
+delta = (z_max - z_min) / M_target
+z_min_idx = int(np.floor(z_min / delta))
+z_max_idx = int(np.ceil(z_max / delta))
+discretized_returns = np.zeros_like(all_stocks_returns)
 for col in range(N): 
-    column = all_stock_returns[:, col] 
-    print(f"continuous) Stock {col}: mean = {np.mean(column)}, variance = {np.var(column):.6g}")
-    
-
-    discretized_returns[:,col]=state_discretization(column, delta, z_min, z_max) 
-
+    column = all_stocks_returns[:, col] 
+    logs.append(f"continuous) Stock {col}: mean = {np.mean(column)}, variance = {np.var(column):.6g} \n")
+    discretized_returns[:,col]=state_discretization(column, delta, z_min_idx, z_max_idx) 
+    #print(f"discretized) Stock {col}: mean = {np.mean(discretized_returns[:,col])}, variance = {np.var(discretized_returns[:, col]):.6g}")
 
 all_discretized = discretized_returns.flatten()
 unique_vals_global = np.unique(all_discretized)
 global_mapping = {v:i for i,v in enumerate(unique_vals_global)}
 global_inverse_mapping = {i:v for v,i in global_mapping.items()}
 n_symbols = len(global_mapping) 
-print(n_symbols)
+logs.append(f"\n z_min={z_min}, z_max={z_max}, delta={delta}, number of distinct_emission_symbols:{n_symbols} \n")
+
 
 n_trials = 1 #each obs is a single symbol from a multinomial distr.
 hmm_models = []
@@ -75,81 +70,110 @@ X_counts[np.arange(len(obs_int)), obs_int] = 1 #one hot encoding matrix of size 
 #can map back using np.argmax(X_counts, axis=1)
 model = hmm.MultinomialHMM(n_components=K, n_iter=max_iterations, random_state=seed, n_trials=n_trials)
 model.fit(X_counts)
-hmm_models.append(model)
+#hmm_models.append(model)
 common_transition = model.transmat_.copy()
 common_initial_distr = model.startprob_.copy()
 
+for i in range(0,N):
+    folder_name = f"model_{i}"
+    os.makedirs(folder_name, exist_ok=True)
 
 
-for i in range(1,N):
     print(f"processing model {i+1}")
     X_counts = np.zeros((len(discretized_returns[:,i]), n_symbols), dtype=int)
     obs_int = apply_global_mapping(discretized_returns[:,i], global_mapping)
     X_counts[np.arange(len(obs_int)), obs_int] = 1
-    model = hmm.MultinomialHMM(n_components=K, n_iter=100, random_state=seed, n_trials=n_trials) #model for stock i
+    model = hmm.MultinomialHMM(n_components=K, n_iter=max_iterations, random_state=seed, n_trials=n_trials) #model for stock i
     model.startprob_ = common_initial_distr
     model.transmat_ = common_transition
     model.params = 'e' #only emission probs shall be updated
     model.init_params = 'e'#only emission probs are randomly initialized
     model.fit(X_counts)
+    sim, states_tbd, rsmd_matrix, pmad_matrix = hidden_similarities(model) #return string and list of states to be deleted
+    logs.append(f"\n model{i}"+sim+"\n")
+    new_K = K
+    K_current = len(model.startprob_)
+    while len(states_tbd) > 0 and merge:
+        keep_mask = np.ones(K_current, dtype=bool)
+        keep_mask[states_tbd] = False
+        new_K = keep_mask.sum()
+        
+        new_startprob = model.startprob_[keep_mask]
+        new_startprob /= new_startprob.sum()  #normalize
+        new_transmat = model.transmat_[keep_mask, :][:, keep_mask]
+        new_transmat /= new_transmat.sum(axis=1, keepdims=True)  #row-normalize
+        
+        pruned_model = hmm.MultinomialHMM(n_components=new_K, n_iter=max_iterations, random_state=seed, n_trials=n_trials)
+        pruned_model.startprob_ = new_startprob
+        pruned_model.transmat_ = new_transmat
+        pruned_model.params = 'e'
+        pruned_model.init_params = 'e'
+        pruned_model.fit(X_counts)
+        model = pruned_model 
+        sim, states_tbd, rsmd_matrix, pmad_matrix = hidden_similarities(model) #return string and list of states to be deleted
+        logs.append(f"\n model{i}"+sim+"\n")
+        K_current = len(model.startprob_)
+
     hmm_models.append(model)
-    X_next, Z = model.sample(n_samples=1)
-    hidden_states = model.predict(X_counts)  #uses viterbi algorithm to find most likely sequence of hidden states for obs
+    state_names = [f"S_{k}" for k in range(new_K)]
+    rsmd_df = pd.DataFrame(rsmd_matrix,index=state_names, columns=state_names)
+    pmad_df = pd.DataFrame(pmad_matrix,index=state_names, columns=state_names)
+    rsmd_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"rsmd_matrix.csv"))
+    pmad_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"mad_matrix.csv"))
+
+
+
+    #X_next, Z = model.sample(n_samples=1)
+    #hidden_states = model.predict(X_counts)  #uses viterbi algorithm to find most likely sequence of hidden states for obs
     #print("Generated Hidden States:", Z)
     #print("Generated Observations:", X_next[0], "that is emission ", inverse_mapping[np.argmax(X_next[0])])
     #log_likelihood = model.score(X_counts)
     #print("Log-likelihood of the sequence:", log_likelihood)
 
 n_sim = len(discretized_returns[:,0])  #number of returns to simulate (adjust based on max lag) (say at least as original sample obs for fair variance comparison
-simulated_returns = np.zeros((n_sim, N))  # store simulated returns for each stock
+sim_returns = np.zeros((n_sim, N))  #store simulated returns for each stock
 autocorr_matrix = np.zeros((max_lag+1, N))
 
-for q in range(N):
+for q in range(N): #final models
     model = hmm_models[q] 
+    folder_name = f"model_{q}"
     emission_matrix = model.emissionprob_  #(K x n_symbols)
-    rsmd_matrix = np.zeros((K, K))
-    pmad_matrix = np.zeros((K, K))
-    
+    state_names = [f"S_{k}" for k in range(len(emission_matrix))]
+    pd.DataFrame(emission_matrix, index=state_names, columns= [f"O_{k}" for k in range(n_symbols)]).to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(q)+"emissions-hiddens_matrix.csv"))
+    pd.DataFrame(model.startprob_,index=state_names).to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(q)+"startprob.csv"))
+    pd.DataFrame(model.transmat_,index=state_names, columns=state_names).to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(q)+"transmat_matrix.csv"))
+ 
     o,z=model.sample(n_samples=n_sim)
     index_returns = np.argmax(o,axis=1)
     discretized_pred_returns = [global_inverse_mapping[index] for index in index_returns]
-    simulated_returns[:, q] = discretized_pred_returns
-
-    for i in range(K):
-        for j in range(i, K):
-            rsmd_matrix[i, j] =percentage_rsmd(emission_matrix[i, :], emission_matrix[j, :])
-            rsmd_matrix[j, i] = percentage_rsmd(emission_matrix[j, :], emission_matrix[i, :])
-            
-            pmad_matrix[i, j] = percentage_mad(emission_matrix[i, :], emission_matrix[j, :])
-            pmad_matrix[j, i] = percentage_mad(emission_matrix[j, :], emission_matrix[i, :])
-
-            if j!=i:
-                if rsmd_matrix[i, j]<=50 or pmad_matrix[i, j]<=50:
-                    print(f"model {q} has not too different probabilities" )
+    sim_returns[:, q] = discretized_pred_returns
 
 
-    state_names = [f"P_{k}" for k in range(K)]
-    rsmd_df = pd.DataFrame(rsmd_matrix, index=state_names, columns=state_names)
-    pmad_df = pd.DataFrame(pmad_matrix, index=state_names, columns=state_names)
-    rsmd_df.to_csv("model_"+str(q)+"rsmd_matrix.csv")
-    pmad_df.to_csv("model_"+str(q)+"mad_matrix.csv")
-
-
-
-squared_returns = simulated_returns ** 2
-
+sim_squared_returns = sim_returns ** 2
 
 for i in range(N):
-    vals = squared_returns[:, i]
+    folder_name = f"model_{q}"
+    vals = sim_squared_returns[:, i]
     gt_squared_vals = discretized_returns[:,i] **2
-    print(f"Stock {i}: mean = {np.mean(simulated_returns[:,i])}, variance = {np.var(vals):.6g}, variance from gt = {np.var(gt_squared_vals):.6g}, mean from gt = {np.mean(discretized_returns[:,i])}")
-    
+    logs.append(f"\n Stock {i}: model sqr returns mean = {np.mean(vals)}, variance = {np.var(vals):.6g},  \n gt sqr returns mean = {np.mean(gt_squared_vals)} variance = {np.var(gt_squared_vals)} \n ")
+    logs.append(f"\n Stock {i}: model returns mean = {np.mean(sim_returns[:,i])}, variance = {np.var(sim_returns[:,i]):.6g},  \n gt returns mean = {np.mean(discretized_returns[:,i])} variance = {np.var(discretized_returns[:,i])} \n ")
+
+    autocorr_matrix[:, i] = autocorr(gt_squared_vals, max_lag=max_lag)
+    plt.figure(figsize=(10,6))
+    plt.plot(range(0, max_lag+1), autocorr_matrix[:, i], marker='o')
+    plt.title("gt Autocorrelation of squared Returns (discretized) for Stock "+str(i))
+    plt.xlabel("Lags")
+    plt.ylabel("Autocorrelation")
+    plt.grid(True)
+    plt.savefig(os.path.join(folder_name, savepoint_filename+f"gtautocorrelation_plot_{i}.png"))
+    plt.close()
 
 for i in range(N):
+    folder_name = f"model_{i}"
     try:
-        autocorr_matrix[:, i] = autocorr(squared_returns[:, i], max_lag=max_lag)
+        autocorr_matrix[:, i] = autocorr(sim_squared_returns[:, i], max_lag=max_lag)
         autocorr_df = pd.DataFrame(autocorr_matrix[:,i])
-        autocorr_df.to_csv("model_"+str(i)+"autocorr.csv")
+        autocorr_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"autocorr.csv"))
 
     except Exception as e:
         print(f"Error computing autocorr for stock {i}: {e}")
@@ -158,8 +182,15 @@ for i in range(N):
     plt.figure(figsize=(10,6))
     plt.plot(range(0, max_lag+1), autocorr_matrix[:, i], marker='o')
     plt.title("Autocorrelation of Squared Returns for Stock "+str(i))
-    plt.xlabel("Lag")
+    plt.xlabel("Lags")
     plt.ylabel("Autocorrelation")
     plt.grid(True)
-    plt.savefig(f"autocorrelation_plot_{i}.png")
+    plt.savefig(os.path.join(folder_name, savepoint_filename+f"autocorrelation_plot_{i}.png"))
     plt.close()
+
+
+with open(savepoint_filename+"log.txt", "w") as file:
+    for l in logs:
+        file.write(l)
+
+print(f"log has been written to disk.")

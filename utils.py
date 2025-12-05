@@ -29,7 +29,7 @@ def perform_PCA(D, v_t=0.8):
     #print("Cumulative Explained Variance:", cumulative_variance)
     k = np.argmax(cumulative_variance >= v_t) + 1  # +1 because index starts from 0
     #minimum number of components that first reaches the thresh of  variance
-    print("k=", k)
+    print("PCA k=", k)
     return k
 
 
@@ -100,3 +100,29 @@ def autocorr(x, max_lag=100):
         autocorrs[lag] = np.sum((x[:n-lag]-x_mean)*(x[lag:]-x_mean)) / ((n-lag)*x_var)
     return autocorrs
 
+
+
+def hidden_similarities(hmm):
+    #more robust algo for state removal (to do )
+
+    res = ""
+    states_tbd = set()  # collect states to delete
+    emission_matrix = hmm.emissionprob_
+    K =len(emission_matrix)  #number of hidden states 
+    rsmd_matrix = np.zeros((K, K))
+    pmad_matrix = np.zeros((K, K))
+    
+
+    for i in range(K):
+        for j in range(i, K):
+            rsmd_matrix[i, j] =percentage_rsmd(emission_matrix[i, :], emission_matrix[j, :])
+            rsmd_matrix[j, i] = percentage_rsmd(emission_matrix[j, :], emission_matrix[i, :])
+            
+            pmad_matrix[i, j] = percentage_mad(emission_matrix[i, :], emission_matrix[j, :])
+            pmad_matrix[j, i] = percentage_mad(emission_matrix[j, :], emission_matrix[i, :])
+
+            if j!=i and (rsmd_matrix[i, j]<50 or pmad_matrix[i, j]<50):
+                res += f"state {i} and {j} are very similar rsmd={rsmd_matrix[i, j]}, pmad={pmad_matrix[i, j]}"
+                states_tbd.add(j)
+
+    return res, sorted(list(states_tbd)), rsmd_matrix, pmad_matrix
