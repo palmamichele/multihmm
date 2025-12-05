@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from hmmlearn import hmm
 from utils import perform_PCA, state_discretization, apply_global_mapping, percentage_rsmd, percentage_mad, autocorr
+import traceback
 
 
 seed=0
@@ -42,13 +43,20 @@ for day in stocks_returns.keys():
 all_stock_returns = np.array(all_stock_returns).reshape(-1, N)  #first column is referred to first stock, second column to second stock, ...
 K = perform_PCA(all_stock_returns)
 all_stock_returns = np.array(all_stock_returns)
+
+z_min = np.min(all_stock_returns) - 3*np.std(all_stock_returns)
+z_max = np.max(all_stock_returns) + 3*np.std(all_stock_returns)
 delta = 0.0001
-z_min = -5
-z_max = 5
+
+
+
 
 discretized_returns = np.zeros_like(all_stock_returns)
 for col in range(N): 
     column = all_stock_returns[:, col] 
+    print(f"continuous) Stock {col}: mean = {np.mean(column)}, variance = {np.var(column):.6g}")
+    
+
     discretized_returns[:,col]=state_discretization(column, delta, z_min, z_max) 
 
 
@@ -96,8 +104,8 @@ n_sim = len(discretized_returns[:,0])  #number of returns to simulate (adjust ba
 simulated_returns = np.zeros((n_sim, N))  # store simulated returns for each stock
 autocorr_matrix = np.zeros((max_lag+1, N))
 
-for I in range(N):
-    model = hmm_models[I] 
+for q in range(N):
+    model = hmm_models[q] 
     emission_matrix = model.emissionprob_  #(K x n_symbols)
     rsmd_matrix = np.zeros((K, K))
     pmad_matrix = np.zeros((K, K))
@@ -105,7 +113,7 @@ for I in range(N):
     o,z=model.sample(n_samples=n_sim)
     index_returns = np.argmax(o,axis=1)
     discretized_pred_returns = [global_inverse_mapping[index] for index in index_returns]
-    simulated_returns[:, i] = discretized_pred_returns
+    simulated_returns[:, q] = discretized_pred_returns
 
     for i in range(K):
         for j in range(i, K):
@@ -117,14 +125,14 @@ for I in range(N):
 
             if j!=i:
                 if rsmd_matrix[i, j]<=50 or pmad_matrix[i, j]<=50:
-                    print(f"model {I} has not too different probabilities" )
+                    print(f"model {q} has not too different probabilities" )
 
 
     state_names = [f"P_{k}" for k in range(K)]
     rsmd_df = pd.DataFrame(rsmd_matrix, index=state_names, columns=state_names)
     pmad_df = pd.DataFrame(pmad_matrix, index=state_names, columns=state_names)
-    rsmd_df.to_csv("model_"+str(I)+"rsmd_matrix.csv")
-    pmad_df.to_csv("model_"+str(I)+"mad_matrix.csv")
+    rsmd_df.to_csv("model_"+str(q)+"rsmd_matrix.csv")
+    pmad_df.to_csv("model_"+str(q)+"mad_matrix.csv")
 
 
 
@@ -134,19 +142,19 @@ squared_returns = simulated_returns ** 2
 for i in range(N):
     vals = squared_returns[:, i]
     gt_squared_vals = discretized_returns[:,i] **2
-    print(f"Stock {i}: unique values = {np.unique(vals)}, variance = {np.var(vals):.6g}, variance from gt = {np.var(gt_squared_vals):.6g}")
+    print(f"Stock {i}: mean = {np.mean(simulated_returns[:,i])}, variance = {np.var(vals):.6g}, variance from gt = {np.var(gt_squared_vals):.6g}, mean from gt = {np.mean(discretized_returns[:,i])}")
     
-
-exit()
 
 for i in range(N):
     try:
         autocorr_matrix[:, i] = autocorr(squared_returns[:, i], max_lag=max_lag)
         autocorr_df = pd.DataFrame(autocorr_matrix[:,i])
-        autocorr_df.to_csv("model_"+str(I)+"autocorr.csv")
-    except:
-        print(f"Error in computing autocorr_matrix for stock {i}" )
-        pass
+        autocorr_df.to_csv("model_"+str(i)+"autocorr.csv")
+
+    except Exception as e:
+        print(f"Error computing autocorr for stock {i}: {e}")
+        traceback.print_exc()
+
     plt.figure(figsize=(10,6))
     plt.plot(range(0, max_lag+1), autocorr_matrix[:, i], marker='o')
     plt.title("Autocorrelation of Squared Returns for Stock "+str(i))
