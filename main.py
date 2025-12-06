@@ -17,9 +17,9 @@ warnings.filterwarnings("ignore")
 #--PARS
 max_iterations=100
 max_lag = 100 #maximum number of time steps for which autocorrelation is computed
-frequency_step = 10 # number of minutes between consecutive returns 
+frequency_step = 10 # re-sampling minute frequency for returns
 M_target = 1000 #upper bound on number of bins
-merge=False
+merge=True
 #--
 
 data_file = "data/data.xlsx"
@@ -112,12 +112,12 @@ for i in range(0,N):
             sim, states_tbd, rsmd_matrix, pmad_matrix = hidden_similarities(model) #return string and list of states to be deleted
             logs.append(f"\n model{i}"+sim+"\n")
             K_current = len(model.startprob_)
-            hmm_models.append(model)
-            state_names = [f"S_{k}" for k in range(new_K)]
-            rsmd_df = pd.DataFrame(rsmd_matrix,index=state_names, columns=state_names)
-            pmad_df = pd.DataFrame(pmad_matrix,index=state_names, columns=state_names)
-            rsmd_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"rsmd_matrix.csv"))
-            pmad_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"mad_matrix.csv"))
+        hmm_models.append(model)
+        state_names = [f"S_{k}" for k in range(new_K)]
+        rsmd_df = pd.DataFrame(rsmd_matrix,index=state_names, columns=state_names)
+        pmad_df = pd.DataFrame(pmad_matrix,index=state_names, columns=state_names)
+        rsmd_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"rsmd_matrix.csv"))
+        pmad_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"mad_matrix.csv"))
 
     except Exception as e:
         logs.append(f"\n Error while fitting model{i}: {e}")
@@ -154,7 +154,7 @@ for q in range(N): #final models
 sim_squared_returns = sim_returns ** 2
 
 for i in range(N):
-    folder_name = f"model_{q}"
+    folder_name = f"model_{i}"
     vals = sim_squared_returns[:, i]
     gt_squared_vals = discretized_returns[:,i] **2
     logs.append(f"\n Stock {i}: model sqr returns mean = {np.mean(vals)}, variance = {np.var(vals):.6g},  \n gt sqr returns mean = {np.mean(gt_squared_vals)} variance = {np.var(gt_squared_vals)} \n ")
