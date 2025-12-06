@@ -1,0 +1,94 @@
+41837 observations, 107 days 
+continuous) Stock 0: mean = 0.00013485853185809418, variance = 2.38804e-05 
+continuous) Stock 1: mean = 8.036553518665681e-05, variance = 1.45452e-05 
+continuous) Stock 2: mean = 4.402535282395332e-05, variance = 2.58488e-05 
+continuous) Stock 3: mean = 3.843320155997003e-05, variance = 1.58439e-05 
+continuous) Stock 4: mean = 7.253508140747676e-05, variance = 1.52407e-05 
+continuous) Stock 5: mean = 0.00011779460335648538, variance = 2.75204e-05 
+continuous) Stock 6: mean = 9.19724671182225e-05, variance = 1.69263e-05 
+continuous) Stock 7: mean = 0.00012366981364563426, variance = 1.78683e-05 
+continuous) Stock 8: mean = 6.478487544898462e-05, variance = 1.65787e-05 
+continuous) Stock 9: mean = 0.00013224497265270664, variance = 1.92522e-05 
+
+ z_min=-0.1207305184765868, z_max=0.051726594718757006, delta=0.008622855659767191, number of distinct_emission_symbols:12 
+
+ model0
+
+ model1state 0 and 3 are very similar rsmd=79.47073419855714, pmad=41.453417674838626
+
+ model2state 0 and 2 are very similar rsmd=34.77057356311384, pmad=17.96043621895903
+
+ model3state 0 and 3 are very similar rsmd=42.5771082815291, pmad=23.829566537761256
+
+ model4state 1 and 3 are very similar rsmd=82.14404167959167, pmad=39.89909057038321
+
+ model5state 0 and 2 are very similar rsmd=84.99790118596138, pmad=43.63929659800229
+
+ model6state 1 and 3 are very similar rsmd=20.832451383388893, pmad=10.995138915199343
+
+ model7state 0 and 1 are very similar rsmd=72.7520706554409, pmad=38.22479779922784state 0 and 3 are very similar rsmd=72.73902254446544, pmad=36.142839418330944
+
+ model8state 0 and 1 are very similar rsmd=46.70497245313571, pmad=22.18739594541149state 0 and 3 are very similar rsmd=84.08117281383916, pmad=45.68822584649948state 1 and 3 are very similar rsmd=107.15752844096494, pmad=49.01742041656345
+
+ model9state 0 and 1 are very similar rsmd=86.0804991508535, pmad=42.82268781238335state 1 and 2 are very similar rsmd=84.6060456838735, pmad=41.65147506689906
+
+ Stock 0: model squared returns mean = 3.029617458118631e-05, variance = 1.00439e-08,  
+ gt squared returns mean = 2.70425361138406e-05 variance = 7.466215266785963e-09 
+ 
+ Stock 0: model returns mean = 4.9485541806411413e-05, variance = 3.02937e-05,  
+ gt returns mean = 9.27853908870214e-05 variance = 2.703392698507854e-05 
+ 
+ Stock 1: model squared returns mean = 1.4881395612941866e-05, variance = 4.31157e-09,  
+ gt squared returns mean = 1.4774718941881352e-05 variance = 3.783300158413194e-09 
+ 
+ Stock 1: model returns mean = -6.804261998381571e-05, variance = 1.48768e-05,  
+ gt returns mean = 4.329984908061e-05 variance = 1.4772844064950944e-05 
+ 
+ Stock 2: model squared returns mean = 2.5975769403235443e-05, variance = 8.67773e-08,  
+ gt squared returns mean = 2.70425361138406e-05 variance = 8.689524812494845e-08 
+ 
+ Stock 2: model returns mean = 5.567123453221286e-05, variance = 2.59727e-05,  
+ gt returns mean = 9.27853908870214e-05 variance = 2.7033926985078538e-05 
+ 
+ Stock 3: model squared returns mean = 2.410892765967643e-05, variance = 2.76718e-08,  
+ gt squared returns mean = 1.6534884014379854e-05 variance = 7.4283742139139875e-09 
+ 
+ Stock 3: model returns mean = -0.00017319939632244, variance = 2.40789e-05,  
+ gt returns mean = 4.977685727336606e-21 variance = 1.6534884014379854e-05 
+ 
+ Stock 4: model squared returns mean = 1.9361815797483504e-05, variance = 4.30092e-09,  
+ gt squared returns mean = 1.7174944040742946e-05 variance = 3.1236265660078176e-09 
+ 
+ Stock 4: model returns mean = -0.00024124201630625568, variance = 1.93036e-05,  
+ gt returns mean = -2.4742770903205724e-05 variance = 1.7174331836030976e-05 
+ 
+ Stock 5: model squared returns mean = 3.098957294307966e-05, variance = 1.58114e-08,  
+ gt squared returns mean = 3.088289627201915e-05 variance = 1.324020061236756e-08 
+ 
+ Stock 5: model returns mean = 0.00016701370359663856, variance = 3.09617e-05,  
+ gt returns mean = -6.185692725801453e-06 variance = 3.088285800922464e-05 
+ 
+ Stock 6: model squared returns mean = 2.1602025889754324e-05, variance = 1.05625e-08,  
+ gt squared returns mean = 1.8188372415817836e-05 variance = 5.399907718412388e-09 
+ 
+ Stock 6: model returns mean = 6.185692725801403e-06, variance = 2.1602e-05,  
+ gt returns mean = 0.00016701370359663856 variance = 1.816047883862877e-05 
+ 
+ Stock 7: model squared returns mean = 2.016189083043737e-05, variance = 6.08964e-09,  
+ gt squared returns mean = 1.9041785784301962e-05 variance = 4.051456408281707e-09 
+ 
+ Stock 7: model returns mean = -0.00012371385451602856, variance = 2.01466e-05,  
+ gt returns mean = 1.85570781774043e-05 variance = 1.9041441419151478e-05 
+ 
+ Stock 8: model squared returns mean = 1.89884474487717e-05, variance = 5.57242e-09,  
+ gt squared returns mean = 1.8241710751348097e-05 variance = 3.593480378797287e-09 
+ 
+ Stock 8: model returns mean = -6.185692725801427e-05, variance = 1.89846e-05,  
+ gt returns mean = 4.948554180641143e-05 variance = 1.8239261932500218e-05 
+ 
+ Stock 9: model squared returns mean = 2.229542425164767e-05, variance = 5.30106e-09,  
+ gt squared returns mean = 2.2455439258238447e-05 variance = 5.305795844943852e-09 
+ 
+ Stock 9: model returns mean = 2.4742770903205713e-05, variance = 2.22948e-05,  
+ gt returns mean = 0.00010515677633862428 variance = 2.2444381310628513e-05 
+ 

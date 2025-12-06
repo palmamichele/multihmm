@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 import traceback
 import warnings
 import os
+import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from hmmlearn import hmm
-from utils import perform_PCA, state_discretization, apply_global_mapping, percentage_rsmd, percentage_mad, autocorr, hidden_similarities
+from utils import perform_PCA, state_discretization, apply_global_mapping, percentage_rsmd, percentage_mad, hidden_similarities
+from statsmodels.tsa.stattools import acf
 
 
 seed=0
@@ -15,11 +17,11 @@ np.random.seed(seed)
 warnings.filterwarnings("ignore")
 
 #--PARS
-max_iterations=100
+max_iterations=5000
 max_lag = 100 #maximum number of time steps for which autocorrelation is computed
-frequency_step = 10 # re-sampling minute frequency for returns
-M_target = 1000 #upper bound on number of bins
-merge=True
+frequency_step = 30 # re-sampling minute frequency for returns
+M_target = 20 #upper bound on number of bins
+merge=False
 #--
 
 data_file = "data/data.xlsx"
@@ -27,7 +29,7 @@ logs = []
 stock_prices = pd.read_excel(data_file, index_col=0, parse_dates=True)
 stock_prices.index = pd.to_datetime(stock_prices.index) #use the first column as time index 
 N = len(stock_prices.iloc[0]) 
-savepoint_filename = str(merge)+str(frequency_step)+str(M_target)+str(N)
+savepoint_filename = str(merge)+str(frequency_step)
 stock_prices = stock_prices.iloc[:,:N] #filter number of stocks (in case we set it manually)
 days = sorted(set(stock_prices.index.date))
 num_days = len(days)
@@ -40,6 +42,7 @@ for i in range(frequency_step, original_T, frequency_step):
 
 T = len(all_stocks_returns)
 all_stocks_returns = np.vstack(all_stocks_returns)   #first column is referred to first stock, second column to second stock, ...
+gt_autocorr_continuous = np.zeros((max_lag+1, N))
 K = perform_PCA(all_stocks_returns)
 z_min = np.min(all_stocks_returns) - 3*np.std(all_stocks_returns)
 z_max = np.max(all_stocks_returns) + 3*np.std(all_stocks_returns)
@@ -48,10 +51,21 @@ z_min_idx = int(np.floor(z_min / delta))
 z_max_idx = int(np.ceil(z_max / delta))
 discretized_returns = np.zeros_like(all_stocks_returns)
 for col in range(N): 
+    folder_name = f"model_{col}"
+    os.makedirs(folder_name, exist_ok=True)
     column = all_stocks_returns[:, col] 
+    gt_autocorr_continuous[:,col] = acf(column**2, nlags=max_lag, fft=False)
+    plt.figure()
+    plt.plot(range(max_lag+1), gt_autocorr_continuous[:, col], marker='x', label='Continuous')
+    plt.title(f"gt ACF of squared (continuous) returns - Stock {col}")
+    plt.axhline(0, color='black', linestyle='--')
+    plt.grid(True)
+    plt.savefig(os.path.join(folder_name, savepoint_filename+f"gt_Cautocorrelation_plot_{col}.png"))
+    plt.close()
     logs.append(f"continuous) Stock {col}: mean = {np.mean(column)}, variance = {np.var(column):.6g} \n")
     discretized_returns[:,col]=state_discretization(column, delta, z_min_idx, z_max_idx) 
     #print(f"discretized) Stock {col}: mean = {np.mean(discretized_returns[:,col])}, variance = {np.var(discretized_returns[:, col]):.6g}")
+
 
 all_discretized = discretized_returns.flatten()
 unique_vals_global = np.unique(all_discretized)
@@ -73,9 +87,8 @@ model.fit(X_counts)
 common_transition = model.transmat_.copy()
 common_initial_distr = model.startprob_.copy()
 
+
 for i in range(0,N):
-    folder_name = f"model_{i}"
-    os.makedirs(folder_name, exist_ok=True)
     print(f"processing model {i+1}")
 
     try:
@@ -89,10 +102,11 @@ for i in range(0,N):
         model.init_params = 'e'#only emission probs are randomly initialized
         model.fit(X_counts)
         sim, states_tbd, rsmd_matrix, pmad_matrix = hidden_similarities(model) #return string and list of states to be deleted
+        print(states_tbd)
         logs.append(f"\n model{i}"+sim+"\n")
         new_K = K
         K_current = len(model.startprob_)
-        while len(states_tbd) > 0 and merge:
+        while len(states_tbd) > 0 and merge and K_current>2:
             keep_mask = np.ones(K_current, dtype=bool)
             keep_mask[states_tbd] = False
             new_K = keep_mask.sum()
@@ -135,6 +149,8 @@ for i in range(0,N):
 n_sim = len(discretized_returns[:,0])  #number of returns to simulate (adjust based on max lag) (say at least as original sample obs for fair variance comparison
 sim_returns = np.zeros((n_sim, N))  #store simulated returns for each stock
 autocorr_matrix = np.zeros((max_lag+1, N))
+gt_autocorr_discrete = np.zeros((max_lag+1, N))
+
 
 for q in range(N): #final models
     model = hmm_models[q] 
@@ -151,44 +167,50 @@ for q in range(N): #final models
     sim_returns[:, q] = discretized_pred_returns
 
 
-sim_squared_returns = sim_returns ** 2
 
 for i in range(N):
     folder_name = f"model_{i}"
-    vals = sim_squared_returns[:, i]
-    gt_squared_vals = discretized_returns[:,i] **2
-    logs.append(f"\n Stock {i}: model sqr returns mean = {np.mean(vals)}, variance = {np.var(vals):.6g},  \n gt sqr returns mean = {np.mean(gt_squared_vals)} variance = {np.var(gt_squared_vals)} \n ")
+    logs.append(f"\n Stock {i}: model squared returns mean = {np.mean(sim_returns[:,i] **2)}, variance = {np.var(sim_returns[:,i] **2):.6g},  \n gt squared returns mean = {np.mean(discretized_returns[:,i]**2)} variance = {np.var(discretized_returns[:,i]**2)} \n ")
     logs.append(f"\n Stock {i}: model returns mean = {np.mean(sim_returns[:,i])}, variance = {np.var(sim_returns[:,i]):.6g},  \n gt returns mean = {np.mean(discretized_returns[:,i])} variance = {np.var(discretized_returns[:,i])} \n ")
 
-    autocorr_matrix[:, i] = autocorr(gt_squared_vals, max_lag=max_lag)
-    plt.figure(figsize=(10,6))
-    plt.plot(range(0, max_lag+1), autocorr_matrix[:, i], marker='o')
-    plt.title("gt Autocorrelation of squared Returns (discretized) for Stock "+str(i))
-    plt.xlabel("Lags")
-    plt.ylabel("Autocorrelation")
+    
+    gt_autocorr_discrete[:,i] = acf(discretized_returns[:, i]**2, nlags=max_lag, fft=False)
+    plt.figure()
+    plt.plot(range(max_lag+1), gt_autocorr_discrete[:, i], marker='o', label='Discretized')
+    plt.title(f"gt ACF of squared (discretized) returns - Stock {i}")
+    plt.axhline(0, color='black', linestyle='--')
     plt.grid(True)
-    plt.savefig(os.path.join(folder_name, savepoint_filename+f"gtautocorrelation_plot_{i}.png"))
+    plt.savefig(os.path.join(folder_name, savepoint_filename+f"gt_Dautocorrelation_plot_{i}.png"))
     plt.close()
 
-for i in range(N):
-    folder_name = f"model_{i}"
+
     try:
-        autocorr_matrix[:, i] = autocorr(sim_squared_returns[:, i], max_lag=max_lag)
-        autocorr_df = pd.DataFrame(autocorr_matrix[:,i])
-        autocorr_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"autocorr.csv"))
+        autocorr_matrix[:, i] = acf(sim_returns[:, i]**2, nlags=max_lag, fft=False)
+        #autocorr_df = pd.DataFrame(autocorr_matrix[:,i])
+        #autocorr_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"autocorr.csv"))
+        plt.figure()
+        plt.plot(range(max_lag+1), autocorr_matrix[:,i], marker='o')
+        plt.title("ACF of squared returns (from model) for Stock "+str(i))
+        plt.xlabel("Lags")
+        plt.axhline(0, color='black', linestyle='--')
+        plt.ylabel("Autocorrelation")
+        plt.grid(True)
+        plt.savefig(os.path.join(folder_name, savepoint_filename+f"autocorrelation_plot_{i}.png"))
+        plt.close()
 
     except Exception as e:
         print(f"Error computing autocorr for stock {i}: {e}")
         traceback.print_exc()
 
-    plt.figure(figsize=(10,6))
-    plt.plot(range(0, max_lag+1), autocorr_matrix[:, i], marker='o')
-    plt.title("Autocorrelation of Squared Returns for Stock "+str(i))
-    plt.xlabel("Lags")
-    plt.ylabel("Autocorrelation")
+    plt.figure(figsize=(8,5))
+    sns.histplot(discretized_returns[:, i], color='blue', label='Empirical', stat='density', bins=50, kde=True)
+    sns.histplot(sim_returns[:, i], color='red', label='Simulated', stat='density', bins=50, kde=True, alpha=0.5)
+    plt.title(f"Stock {i} - Empirical vs Simulated Returns")
+    plt.xlabel("Returns")
+    plt.ylabel("Density")
+    plt.legend()
     plt.grid(True)
-    plt.savefig(os.path.join(folder_name, savepoint_filename+f"autocorrelation_plot_{i}.png"))
-    plt.close()
+    plt.show()
 
 
 with open(savepoint_filename+"log.txt", "w") as file:

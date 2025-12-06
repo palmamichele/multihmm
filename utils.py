@@ -88,19 +88,6 @@ def percentage_mad(matrix1, matrix2):
     denominator = np.sum(matrix2)
     return (numerator / denominator) * 100
 
-def autocorr(x, max_lag=100):
-    """
-    Compute autocorrelation of a 1D array up to max_lag
-    """
-    n = len(x)
-    x_mean = np.mean(x)
-    x_var = np.var(x)
-    autocorrs = np.zeros(max_lag+1)
-    for lag in range(max_lag+1):
-        autocorrs[lag] = np.sum((x[:n-lag]-x_mean)*(x[lag:]-x_mean)) / ((n-lag)*x_var)
-    return autocorrs
-
-
 
 def hidden_similarities(hmm):
     #more robust algo for state removal (to do )
