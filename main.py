@@ -17,9 +17,9 @@ warnings.filterwarnings("ignore")
 #--PARS
 max_iterations=100
 max_lag = 100 #maximum number of time steps for which autocorrelation is computed
-frequency_step = 1 # number of minutes between consecutive returns 
-M_target = 50000 #upper bound on number of bins
-merge=True
+frequency_step = 10 # number of minutes between consecutive returns 
+M_target = 1000 #upper bound on number of bins
+merge=False
 #--
 
 data_file = "data/data.xlsx"
