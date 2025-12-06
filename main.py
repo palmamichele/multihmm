@@ -14,14 +14,13 @@ seed=0
 np.random.seed(seed)
 warnings.filterwarnings("ignore")
 
+#--PARS
 max_iterations=100
 max_lag = 100 #maximum number of time steps for which autocorrelation is computed
 frequency_step = 1 # number of minutes between consecutive returns 
-M_target = 1000 #upper bound on number of bins
+M_target = 50000 #upper bound on number of bins
 merge=True
-
-
-
+#--
 
 data_file = "data/data.xlsx"
 logs = []
@@ -77,49 +76,52 @@ common_initial_distr = model.startprob_.copy()
 for i in range(0,N):
     folder_name = f"model_{i}"
     os.makedirs(folder_name, exist_ok=True)
-
-
     print(f"processing model {i+1}")
-    X_counts = np.zeros((len(discretized_returns[:,i]), n_symbols), dtype=int)
-    obs_int = apply_global_mapping(discretized_returns[:,i], global_mapping)
-    X_counts[np.arange(len(obs_int)), obs_int] = 1
-    model = hmm.MultinomialHMM(n_components=K, n_iter=max_iterations, random_state=seed, n_trials=n_trials) #model for stock i
-    model.startprob_ = common_initial_distr
-    model.transmat_ = common_transition
-    model.params = 'e' #only emission probs shall be updated
-    model.init_params = 'e'#only emission probs are randomly initialized
-    model.fit(X_counts)
-    sim, states_tbd, rsmd_matrix, pmad_matrix = hidden_similarities(model) #return string and list of states to be deleted
-    logs.append(f"\n model{i}"+sim+"\n")
-    new_K = K
-    K_current = len(model.startprob_)
-    while len(states_tbd) > 0 and merge:
-        keep_mask = np.ones(K_current, dtype=bool)
-        keep_mask[states_tbd] = False
-        new_K = keep_mask.sum()
-        
-        new_startprob = model.startprob_[keep_mask]
-        new_startprob /= new_startprob.sum()  #normalize
-        new_transmat = model.transmat_[keep_mask, :][:, keep_mask]
-        new_transmat /= new_transmat.sum(axis=1, keepdims=True)  #row-normalize
-        
-        pruned_model = hmm.MultinomialHMM(n_components=new_K, n_iter=max_iterations, random_state=seed, n_trials=n_trials)
-        pruned_model.startprob_ = new_startprob
-        pruned_model.transmat_ = new_transmat
-        pruned_model.params = 'e'
-        pruned_model.init_params = 'e'
-        pruned_model.fit(X_counts)
-        model = pruned_model 
+
+    try:
+        X_counts = np.zeros((len(discretized_returns[:,i]), n_symbols), dtype=int)
+        obs_int = apply_global_mapping(discretized_returns[:,i], global_mapping)
+        X_counts[np.arange(len(obs_int)), obs_int] = 1
+        model = hmm.MultinomialHMM(n_components=K, n_iter=max_iterations, random_state=seed, n_trials=n_trials) #model for stock i
+        model.startprob_ = common_initial_distr
+        model.transmat_ = common_transition
+        model.params = 'e' #only emission probs shall be updated
+        model.init_params = 'e'#only emission probs are randomly initialized
+        model.fit(X_counts)
         sim, states_tbd, rsmd_matrix, pmad_matrix = hidden_similarities(model) #return string and list of states to be deleted
         logs.append(f"\n model{i}"+sim+"\n")
+        new_K = K
         K_current = len(model.startprob_)
+        while len(states_tbd) > 0 and merge:
+            keep_mask = np.ones(K_current, dtype=bool)
+            keep_mask[states_tbd] = False
+            new_K = keep_mask.sum()
+            
+            new_startprob = model.startprob_[keep_mask]
+            new_startprob /= new_startprob.sum()  #normalize
+            new_transmat = model.transmat_[keep_mask, :][:, keep_mask]
+            new_transmat /= new_transmat.sum(axis=1, keepdims=True)  #row-normalize
+            
+            pruned_model = hmm.MultinomialHMM(n_components=new_K, n_iter=max_iterations, random_state=seed, n_trials=n_trials)
+            pruned_model.startprob_ = new_startprob
+            pruned_model.transmat_ = new_transmat
+            pruned_model.params = 'e'
+            pruned_model.init_params = 'e'
+            pruned_model.fit(X_counts)
+            model = pruned_model 
+            sim, states_tbd, rsmd_matrix, pmad_matrix = hidden_similarities(model) #return string and list of states to be deleted
+            logs.append(f"\n model{i}"+sim+"\n")
+            K_current = len(model.startprob_)
+            hmm_models.append(model)
+            state_names = [f"S_{k}" for k in range(new_K)]
+            rsmd_df = pd.DataFrame(rsmd_matrix,index=state_names, columns=state_names)
+            pmad_df = pd.DataFrame(pmad_matrix,index=state_names, columns=state_names)
+            rsmd_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"rsmd_matrix.csv"))
+            pmad_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"mad_matrix.csv"))
 
-    hmm_models.append(model)
-    state_names = [f"S_{k}" for k in range(new_K)]
-    rsmd_df = pd.DataFrame(rsmd_matrix,index=state_names, columns=state_names)
-    pmad_df = pd.DataFrame(pmad_matrix,index=state_names, columns=state_names)
-    rsmd_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"rsmd_matrix.csv"))
-    pmad_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"mad_matrix.csv"))
+    except Exception as e:
+        logs.append(f"\n Error while fitting model{i}: {e}")
+        print(logs[-1])
 
 
 
