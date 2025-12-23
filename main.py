@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from hmmlearn import hmm
 from utils import perform_PCA, state_discretization, apply_global_mapping, percentage_rsmd, percentage_mad, hidden_similarities
 from statsmodels.tsa.stattools import acf
+from scipy.spatial.distance import jensenshannon
 
 
 seed=0
@@ -17,13 +18,13 @@ np.random.seed(seed)
 warnings.filterwarnings("ignore")
 
 #--PARS
-max_iterations=5000
+max_iterations=1000
 max_lag = 100 #maximum number of time steps for which autocorrelation is computed
-frequency_step = 30 # re-sampling minute frequency for returns
-M_target = 20 #upper bound on number of bins
+frequency_step = 10 # re-sampling minute frequency for returns
+M_target = 900000 #upper bound on number of bins
 merge=False
 #--
-
+saving_name = str(M_target)
 data_file = "data/data.xlsx"
 logs = []
 stock_prices = pd.read_excel(data_file, index_col=0, parse_dates=True)
@@ -42,7 +43,7 @@ for i in range(frequency_step, original_T, frequency_step):
 
 T = len(all_stocks_returns)
 all_stocks_returns = np.vstack(all_stocks_returns)   #first column is referred to first stock, second column to second stock, ...
-gt_autocorr_continuous = np.zeros((max_lag+1, N))
+gt_autocorr_continuous = np.zeros((max_lag, N))
 K = perform_PCA(all_stocks_returns)
 z_min = np.min(all_stocks_returns) - 3*np.std(all_stocks_returns)
 z_max = np.max(all_stocks_returns) + 3*np.std(all_stocks_returns)
@@ -54,14 +55,9 @@ for col in range(N):
     folder_name = f"model_{col}"
     os.makedirs(folder_name, exist_ok=True)
     column = all_stocks_returns[:, col] 
-    gt_autocorr_continuous[:,col] = acf(column**2, nlags=max_lag, fft=False)
-    plt.figure()
-    plt.plot(range(max_lag+1), gt_autocorr_continuous[:, col], marker='x', label='Continuous')
-    plt.title(f"gt ACF of squared (continuous) returns - Stock {col}")
-    plt.axhline(0, color='black', linestyle='--')
-    plt.grid(True)
-    plt.savefig(os.path.join(folder_name, savepoint_filename+f"gt_Cautocorrelation_plot_{col}.png"))
-    plt.close()
+    gt_autocorr_continuous[:,col] = acf(column**2, nlags=max_lag, fft=False)[1:]
+
+    
     logs.append(f"continuous) Stock {col}: mean = {np.mean(column)}, variance = {np.var(column):.6g} \n")
     discretized_returns[:,col]=state_discretization(column, delta, z_min_idx, z_max_idx) 
     #print(f"discretized) Stock {col}: mean = {np.mean(discretized_returns[:,col])}, variance = {np.var(discretized_returns[:, col]):.6g}")
@@ -148,8 +144,8 @@ for i in range(0,N):
 
 n_sim = len(discretized_returns[:,0])  #number of returns to simulate (adjust based on max lag) (say at least as original sample obs for fair variance comparison
 sim_returns = np.zeros((n_sim, N))  #store simulated returns for each stock
-autocorr_matrix = np.zeros((max_lag+1, N))
-gt_autocorr_discrete = np.zeros((max_lag+1, N))
+autocorr_matrix = np.zeros((max_lag, N))
+gt_autocorr_discrete = np.zeros((max_lag, N))
 
 
 for q in range(N): #final models
@@ -173,45 +169,51 @@ for i in range(N):
     logs.append(f"\n Stock {i}: model squared returns mean = {np.mean(sim_returns[:,i] **2)}, variance = {np.var(sim_returns[:,i] **2):.6g},  \n gt squared returns mean = {np.mean(discretized_returns[:,i]**2)} variance = {np.var(discretized_returns[:,i]**2)} \n ")
     logs.append(f"\n Stock {i}: model returns mean = {np.mean(sim_returns[:,i])}, variance = {np.var(sim_returns[:,i]):.6g},  \n gt returns mean = {np.mean(discretized_returns[:,i])} variance = {np.var(discretized_returns[:,i])} \n ")
 
-    
-    gt_autocorr_discrete[:,i] = acf(discretized_returns[:, i]**2, nlags=max_lag, fft=False)
-    plt.figure()
-    plt.plot(range(max_lag+1), gt_autocorr_discrete[:, i], marker='o', label='Discretized')
-    plt.title(f"gt ACF of squared (discretized) returns - Stock {i}")
-    plt.axhline(0, color='black', linestyle='--')
-    plt.grid(True)
-    plt.savefig(os.path.join(folder_name, savepoint_filename+f"gt_Dautocorrelation_plot_{i}.png"))
-    plt.close()
-
+    fig, axes = plt.subplots(2, 1, figsize=(6, 8))
+    gt_autocorr_discrete[:,i] = acf(discretized_returns[:, i]**2, nlags=max_lag, fft=False)[1:]
+    #ymin, ymax = gt_autocorr_discrete[:, i].min(),gt_autocorr_discrete[:, i].max()
+    x = range(1,max_lag+1)
+    axes[0].plot(x, gt_autocorr_continuous[:,i], color="blue")
+    axes[0].set_title("ACF for returns**2 (continuous)")
+    axes[1].plot(x, gt_autocorr_discrete[:, i], color='blue', label='obs')
 
     try:
-        autocorr_matrix[:, i] = acf(sim_returns[:, i]**2, nlags=max_lag, fft=False)
+        autocorr_matrix[:, i] = acf(sim_returns[:, i]**2, nlags=max_lag, fft=False)[1:]
         #autocorr_df = pd.DataFrame(autocorr_matrix[:,i])
         #autocorr_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"autocorr.csv"))
-        plt.figure()
-        plt.plot(range(max_lag+1), autocorr_matrix[:,i], marker='o')
-        plt.title("ACF of squared returns (from model) for Stock "+str(i))
-        plt.xlabel("Lags")
-        plt.axhline(0, color='black', linestyle='--')
-        plt.ylabel("Autocorrelation")
-        plt.grid(True)
-        plt.savefig(os.path.join(folder_name, savepoint_filename+f"autocorrelation_plot_{i}.png"))
-        plt.close()
+        axes[1].plot(x, autocorr_matrix[:,i], color='red',label='model')
 
     except Exception as e:
         print(f"Error computing autocorr for stock {i}: {e}")
         traceback.print_exc()
 
-    plt.figure(figsize=(8,5))
-    sns.histplot(discretized_returns[:, i], color='blue', label='Empirical', stat='density', bins=50, kde=True)
-    sns.histplot(sim_returns[:, i], color='red', label='Simulated', stat='density', bins=50, kde=True, alpha=0.5)
-    plt.title(f"Stock {i} - Empirical vs Simulated Returns")
-    plt.xlabel("Returns")
-    plt.ylabel("Density")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+    axes[1].legend()
+    axes[1].set_title("ACF for returns**2 (discretized returns)")
+    plt.tight_layout()
+    plt.savefig(os.path.join(folder_name, savepoint_filename+f"acf_sqreturns_plot_{i}.png"))
+    plt.close()
 
+
+    ##...
+    # plt.figure()
+    # plt.plot(range(1,max_lag+1), acf(discretized_returns[:, i], nlags=max_lag, fft=False)[1:], marker='o')
+    # plt.title(f"gt ACF of (discretized) returns - Stock {i}")
+    # plt.axhline(0, color='black', linestyle='--')
+    # plt.grid(True)
+    # plt.savefig(os.path.join(folder_name, savepoint_filename+f"gt_returnautocorrelation_plot_{i}.png"))
+    # plt.close()
+
+    # plt.figure()
+    # plt.plot(range(1,max_lag+1), acf(sim_returns[:, i], nlags=max_lag, fft=False)[1:], marker='o')
+    # plt.title(f"model ACF of (discretized) returns - Stock {i}")
+    # plt.axhline(0, color='black', linestyle='--')
+    # plt.grid(True)
+    # plt.savefig(os.path.join(folder_name, savepoint_filename+f"returnautocorrelation_plot_{i}.png"))
+    # plt.close()
+
+
+    #js_div = jensenshannon(hist_empirical, hist_simulated)
+    #print(f"Jensen-Shannon divergence for stock {i}: {js_div}")
 
 with open(savepoint_filename+"log.txt", "w") as file:
     for l in logs:
