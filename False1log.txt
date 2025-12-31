@@ -1,94 +1,94 @@
 41837 observations, 107 days 
-continuous) Stock 0: mean = 4.549191862319604e-06, variance = 8.18614e-07 
-continuous) Stock 1: mean = 2.7468406029647957e-06, variance = 4.5677e-07 
-continuous) Stock 2: mean = 1.4485083753917044e-06, variance = 8.0303e-07 
-continuous) Stock 3: mean = 1.2782479170507017e-06, variance = 5.09735e-07 
-continuous) Stock 4: mean = 2.423435443413398e-06, variance = 5.00234e-07 
-continuous) Stock 5: mean = 3.876580367815323e-06, variance = 8.98471e-07 
-continuous) Stock 6: mean = 3.008022997935919e-06, variance = 5.03997e-07 
-continuous) Stock 7: mean = 4.065830124310713e-06, variance = 5.22171e-07 
-continuous) Stock 8: mean = 2.088092109744268e-06, variance = 4.96365e-07 
-continuous) Stock 9: mean = 4.375396825164758e-06, variance = 5.66583e-07 
+continuous) Stock 0: mean = 4.568847156087957e-06, variance = 5.99872e-07 
+continuous) Stock 1: mean = 1.8865743416112392e-06, variance = 3.34464e-07 
+continuous) Stock 2: mean = 1.5054633951249479e-06, variance = 4.40871e-07 
+continuous) Stock 3: mean = 1.1643929924482221e-06, variance = 3.64011e-07 
+continuous) Stock 4: mean = 5.608875441458174e-07, variance = 3.65062e-07 
+continuous) Stock 5: mean = 4.208076447420438e-07, variance = 6.35442e-07 
+continuous) Stock 6: mean = 1.5750581284964872e-06, variance = 4.40516e-07 
+continuous) Stock 7: mean = 3.0011785571545863e-06, variance = 4.72942e-07 
+continuous) Stock 8: mean = 7.124875537879879e-07, variance = 4.5305e-07 
+continuous) Stock 9: mean = 2.5025262890267096e-06, variance = 5.06732e-07 
 
- z_min=-0.09569919758943804, z_max=0.03437291063068368, delta=1.3007210822012172e-05, number of distinct_emission_symbols:1195 
+ z_min=-0.01982659484427497, z_max=0.01476005428921005, delta=0.003458664913348502, number of distinct_emission_symbols:9 
 
- model0
+ model0state 0 and 1 are very similar rsmd=0.5161293803988374, pmad=0.2786021092391241state 0 and 2 are very similar rsmd=58.7068921077357, pmad=31.926378873959184state 0 and 3 are very similar rsmd=1.948399124308503, pmad=1.0585687764596972state 0 and 4 are very similar rsmd=2.757695585314642, pmad=1.4810676866415686state 0 and 5 are very similar rsmd=52.497051769132966, pmad=28.549493671597986state 0 and 6 are very similar rsmd=0.07463397717342665, pmad=0.03849746141357281state 1 and 2 are very similar rsmd=59.212022608426985, pmad=32.204980983198304state 1 and 3 are very similar rsmd=2.463592563995751, pmad=1.3371708856988214state 1 and 4 are very similar rsmd=3.2552695859247494, pmad=1.7596697958806928state 1 and 5 are very similar rsmd=53.01303445622396, pmad=28.82809578083711state 1 and 6 are very similar rsmd=0.4561414780853027, pmad=0.2481155802888936state 2 and 3 are very similar rsmd=56.77821362540395, pmad=30.867810097499486state 2 and 4 are very similar rsmd=55.95973707926933, pmad=30.44531118731762state 2 and 5 are very similar rsmd=12.063014284365217, pmad=6.641237689297527state 2 and 6 are very similar rsmd=58.75888814482714, pmad=31.95686540290942state 3 and 4 are very similar rsmd=0.9622691392274554, pmad=0.47937314569353784state 3 and 5 are very similar rsmd=50.550966919743125, pmad=27.490924895138292state 3 and 6 are very similar rsmd=2.0078549425737466, pmad=1.0890553054099275state 4 and 5 are very similar rsmd=49.84609021173017, pmad=27.068425984956416state 4 and 6 are very similar rsmd=2.805518811131381, pmad=1.5115542155917987state 5 and 6 are very similar rsmd=52.5580649161513, pmad=28.57998020054821
 
- model1state 2 and 3 are very similar rsmd=221.4541157841436, pmad=39.47144297878701
+ model1state 0 and 1 are very similar rsmd=0.01717375439878765, pmad=0.008863366459184745state 0 and 2 are very similar rsmd=58.565840998759654, pmad=31.853912878842433state 0 and 3 are very similar rsmd=0.8805969461795712, pmad=0.4791269992341223state 0 and 4 are very similar rsmd=0.501264256848755, pmad=0.2579920482965648state 0 and 5 are very similar rsmd=34.680925368481795, pmad=18.973275620816974state 0 and 6 are very similar rsmd=0.1393763590399527, pmad=0.07035646604681578state 1 and 2 are very similar rsmd=58.58235373660183, pmad=31.862776245301617state 1 and 3 are very similar rsmd=0.8967312502965988, pmad=0.4879903656933071state 1 and 4 are very similar rsmd=0.5184374677469626, pmad=0.2668554147557496state 1 and 5 are very similar rsmd=34.69638541394684, pmad=18.982138987276155state 1 and 6 are very similar rsmd=0.15652259440607047, pmad=0.07921983250600054state 2 and 3 are very similar rsmd=57.687733366806825, pmad=31.374785879608318state 2 and 4 are very similar rsmd=58.08517892482339, pmad=31.59592083054587state 2 and 5 are very similar rsmd=25.138692733614782, pmad=13.625076028450046state 2 and 6 are very similar rsmd=58.43438712152328, pmad=31.783556412795615state 3 and 4 are very similar rsmd=0.4481448989267173, pmad=0.22113495093755742state 3 and 5 are very similar rsmd=33.805017648840334, pmad=18.494148621582852state 3 and 6 are very similar rsmd=0.755016527801539, pmad=0.4087705331873065state 4 and 5 are very similar rsmd=34.232199782406305, pmad=18.71528357252041state 4 and 6 are very similar rsmd=0.3621478806368429, pmad=0.18763558224974902state 5 and 6 are very similar rsmd=34.55938625598952, pmad=18.902919154770156
 
- model2
+ model2state 0 and 1 are very similar rsmd=0.06539711166562147, pmad=0.03365033596030579state 0 and 2 are very similar rsmd=70.20685859654068, pmad=38.148266459643786state 0 and 3 are very similar rsmd=1.6524727928525471, pmad=0.8628168148801331state 0 and 4 are very similar rsmd=1.1034590923123362, pmad=0.5657520383805027state 0 and 5 are very similar rsmd=38.64601119614001, pmad=21.145674311460976state 0 and 6 are very similar rsmd=0.06413429813025341, pmad=0.03311914689350779state 1 and 2 are very similar rsmd=70.27024652786822, pmad=38.181916795604096state 1 and 3 are very similar rsmd=1.7178040727541188, pmad=0.8964671508404388state 1 and 4 are very similar rsmd=1.1552444860214275, pmad=0.5994023743408085state 1 and 5 are very similar rsmd=38.70568298713924, pmad=21.179324647421282state 1 and 6 are very similar rsmd=0.12952959886155205, pmad=0.06676948285381358state 2 and 3 are very similar rsmd=68.58909052751221, pmad=37.28544964476366state 2 and 4 are very similar rsmd=69.20365020366556, pmad=37.582514421263284state 2 and 5 are very similar rsmd=32.830036312426415, pmad=17.39530293568282state 2 and 6 are very similar rsmd=70.14453471592402, pmad=38.11514731275028state 3 and 4 are very similar rsmd=0.9997746306624892, pmad=0.543420294220102state 3 and 5 are very similar rsmd=37.11407833406408, pmad=20.282857496580846state 3 and 6 are very similar rsmd=1.5883797711563719, pmad=0.8296976679866251state 4 and 5 are very similar rsmd=37.57907154186269, pmad=20.579922273080474state 4 and 6 are very similar rsmd=1.0537035217227884, pmad=0.5326328914869949state 5 and 6 are very similar rsmd=38.587235164135045, pmad=21.112555164567468
 
- model3state 2 and 3 are very similar rsmd=164.13064196573106, pmad=32.79758229138709
+ model3state 0 and 1 are very similar rsmd=0.03444466555828957, pmad=0.01846851077918321state 0 and 2 are very similar rsmd=61.66223286431912, pmad=33.57715158182188state 0 and 3 are very similar rsmd=1.5326442103119409, pmad=0.8073705440613645state 0 and 4 are very similar rsmd=0.5328907859935199, pmad=0.28306430240447067state 0 and 5 are very similar rsmd=40.64054842754255, pmad=22.055465115796245state 0 and 6 are very similar rsmd=0.10904587042194394, pmad=0.05733437532355246state 1 and 2 are very similar rsmd=61.69549191055149, pmad=33.59562009260106state 1 and 3 are very similar rsmd=1.5640487265036351, pmad=0.8258390548405476state 1 and 4 are very similar rsmd=0.5672998342156552, pmad=0.3015328131836539state 1 and 5 are very similar rsmd=40.67495808130177, pmad=22.073933626575432state 1 and 6 are very similar rsmd=0.14338799927170465, pmad=0.07580288610273567state 2 and 3 are very similar rsmd=60.15104965664345, pmad=32.769781037760524state 2 and 4 are very similar rsmd=61.154973588352036, pmad=33.29408727941742state 2 and 5 are very similar rsmd=25.41152979263449, pmad=12.811839917813952state 2 and 6 are very similar rsmd=61.559871624807016, pmad=33.51981720649833state 3 and 4 are very similar rsmd=1.0863739810417474, pmad=0.5243062416568939state 3 and 5 are very similar rsmd=39.26639130599452, pmad=21.24809457173488state 3 and 6 are very similar rsmd=1.4388264322338586, pmad=0.7500361687378121state 4 and 5 are very similar rsmd=40.108274235025974, pmad=21.772400813391776state 4 and 6 are very similar rsmd=0.4239635025863772, pmad=0.22572992708091827state 5 and 6 are very similar rsmd=40.53184055229423, pmad=21.998130740472696
 
- model4state 2 and 3 are very similar rsmd=209.72072584871265, pmad=45.4382224730355
+ model4state 0 and 1 are very similar rsmd=3.3056885097414e-06, pmad=1.7784886771083917e-06state 0 and 2 are very similar rsmd=33.340627792045396, pmad=18.174819402308053state 0 and 3 are very similar rsmd=0.00022185385340146225, pmad=0.00011083294109369473state 0 and 4 are very similar rsmd=5.6077954362828265e-05, pmad=2.9841063784399354e-05state 0 and 5 are very similar rsmd=31.082231512289987, pmad=16.88051658573973state 0 and 6 are very similar rsmd=6.307802036419783e-06, pmad=3.3965232454823335e-06state 1 and 2 are very similar rsmd=33.34063107105753, pmad=18.174821180796734state 1 and 3 are very similar rsmd=0.0002250535501732877, pmad=0.00011261142977080308state 1 and 4 are very similar rsmd=5.937811527816401e-05, pmad=3.1619552461507744e-05state 1 and 5 are very similar rsmd=31.082234738225512, pmad=16.880518364228408state 1 and 6 are very similar rsmd=9.613456464372112e-06, pmad=5.1750119225907244e-06state 2 and 3 are very similar rsmd=33.34042199866269, pmad=18.174708569366956state 2 and 4 are very similar rsmd=33.34057268769545, pmad=18.174789561244264state 2 and 5 are very similar rsmd=3.7548647304204867, pmad=2.086226809312544state 2 and 6 are very similar rsmd=33.340621530765006, pmad=18.174816005784805state 3 and 4 are very similar rsmd=0.00016721042977643796, pmad=8.099187730929533e-05state 3 and 5 are very similar rsmd=31.082034309462976, pmad=16.880405752798637state 3 and 6 are very similar rsmd=0.00021576646600319745, pmad=0.00010743641784821239state 4 and 5 are very similar rsmd=31.08217761245826, pmad=16.880486744675945state 4 and 6 are very similar rsmd=4.978521576767829e-05, pmad=2.6444540538917025e-05state 5 and 6 are very similar rsmd=31.082225349046162, pmad=16.88051318921649
 
- model5
+ model5state 0 and 1 are very similar rsmd=0.587565879449564, pmad=0.3186416841727382state 0 and 2 are very similar rsmd=61.789767065487176, pmad=33.647302818478536state 0 and 3 are very similar rsmd=2.134689677499623, pmad=1.1431296005888276state 0 and 4 are very similar rsmd=2.758449443384496, pmad=1.4649068482538532state 0 and 5 are very similar rsmd=50.423938324532934, pmad=27.551377908472364state 0 and 6 are very similar rsmd=0.17438396017480134, pmad=0.0908417133878551state 1 and 2 are very similar rsmd=62.37186837123046, pmad=33.96594450265128state 1 and 3 are very similar rsmd=2.7202156095605554, pmad=1.4617712847615658state 1 and 4 are very similar rsmd=3.323216848036576, pmad=1.7835485324265912state 1 and 5 are very similar rsmd=51.0113970993233, pmad=27.8700195926451state 1 and 6 are very similar rsmd=0.41849526984019997, pmad=0.2277999707848831state 2 and 3 are very similar rsmd=59.713896784559836, pmad=32.50417321788971state 2 and 4 are very similar rsmd=59.07314752422672, pmad=32.18239597022468state 2 and 5 are very similar rsmd=13.363170740649599, pmad=6.570172253879875state 2 and 6 are very similar rsmd=61.95389466661394, pmad=33.738144531866396state 3 and 4 are very similar rsmd=1.1515883017113064, pmad=0.6267703688126001state 3 and 5 are very similar rsmd=48.30198804450231, pmad=26.408248307883536state 3 and 6 are very similar rsmd=2.3080282454661774, pmad=1.2339713139766826state 4 and 5 are very similar rsmd=47.79231018474944, pmad=26.086471060218507state 4 and 6 are very similar rsmd=2.911437250964825, pmad=1.555748561641708state 5 and 6 are very similar rsmd=50.594120670269426, pmad=27.64221962186022
 
- model6state 2 and 3 are very similar rsmd=196.02993970395215, pmad=46.310250446431326
+ model6state 0 and 1 are very similar rsmd=0.09688698420337763, pmad=0.05051582356953452state 0 and 2 are very similar rsmd=61.32646837902331, pmad=33.54538793589591state 0 and 3 are very similar rsmd=1.683499551610463, pmad=0.9087383203918664state 0 and 4 are very similar rsmd=0.8465496267664426, pmad=0.46079087555813864state 0 and 5 are very similar rsmd=49.04803470816739, pmad=27.288038738547854state 0 and 6 are very similar rsmd=0.07017703797376981, pmad=0.03767181442607602state 1 and 2 are very similar rsmd=61.41819477534657, pmad=33.59590375946544state 1 and 3 are very similar rsmd=1.7791847976088504, pmad=0.9592541439614009state 1 and 4 are very similar rsmd=0.9399468099128252, pmad=0.511306699127673state 1 and 5 are very similar rsmd=49.14049584534336, pmad=27.33855456211739state 1 and 6 are very similar rsmd=0.1667464368203769, pmad=0.08818763799561052state 2 and 3 are very similar rsmd=59.66685289621869, pmad=32.63664961550404state 2 and 4 are very similar rsmd=60.480836409059734, pmad=33.084597060337764state 2 and 5 are very similar rsmd=12.671907901751583, pmad=7.8940498777812state 2 and 6 are very similar rsmd=61.257739280046785, pmad=33.507716121469834state 3 and 4 are very similar rsmd=0.8494945834547809, pmad=0.4479474448337278state 3 and 5 are very similar rsmd=47.383368573322706, pmad=26.37930041815599state 3 and 6 are very similar rsmd=1.6133731010475925, pmad=0.8710665059657903state 4 and 5 are very similar rsmd=48.20284422093925, pmad=26.82724786298972state 4 and 6 are very similar rsmd=0.7773382497560682, pmad=0.4231190611320626state 5 and 6 are very similar rsmd=48.97902089981175, pmad=27.25036692412177
 
- model7state 2 and 3 are very similar rsmd=195.34600067197957, pmad=48.9289021174523
+ model7state 0 and 1 are very similar rsmd=0.12222783268134928, pmad=0.06476627350096027state 0 and 2 are very similar rsmd=50.84547396388244, pmad=28.12169094079543state 0 and 3 are very similar rsmd=1.7167008666934755, pmad=0.9315943109163579state 0 and 4 are very similar rsmd=1.302288668717628, pmad=0.7082523136922596state 0 and 5 are very similar rsmd=46.74740904248581, pmad=25.463261353711573state 0 and 6 are very similar rsmd=0.05737755308535179, pmad=0.028752586022060836state 1 and 2 are very similar rsmd=50.96422383612883, pmad=28.18645721429639state 1 and 3 are very similar rsmd=1.8376008734228289, pmad=0.9963605844173181state 1 and 4 are very similar rsmd=1.4203758258046235, pmad=0.7730185871932198state 1 and 5 are very similar rsmd=46.86442099011441, pmad=25.52802762721253state 1 and 6 are very similar rsmd=0.1718953647158002, pmad=0.09351885952302111state 2 and 3 are very similar rsmd=49.13631995891162, pmad=27.19009662987908state 2 and 4 are very similar rsmd=49.545092534923896, pmad=27.413438627103176state 2 and 5 are very similar rsmd=5.254360780888065, pmad=3.3072933518441068state 2 and 6 are very similar rsmd=50.7925778117881, pmad=28.092938354773374state 3 and 4 are very similar rsmd=0.45166576252533763, pmad=0.2233419972240984state 3 and 5 are very similar rsmd=45.048375162776864, pmad=24.531667042795213state 3 and 6 are very similar rsmd=1.666002312892125, pmad=0.902841724894297state 4 and 5 are very similar rsmd=45.445422911636086, pmad=24.755009040019313state 4 and 6 are very similar rsmd=1.2487363901357944, pmad=0.6794997276701987state 5 and 6 are very similar rsmd=46.693293531847736, pmad=25.43450876768951
 
- model8state 2 and 3 are very similar rsmd=209.89794692299176, pmad=38.10707085649325
+ model8state 0 and 1 are very similar rsmd=0.09389317931783404, pmad=0.05325486620383585state 0 and 2 are very similar rsmd=56.625734393838236, pmad=30.977552148033944state 0 and 3 are very similar rsmd=1.3903271068797562, pmad=0.7619874001760956state 0 and 4 are very similar rsmd=0.919521953187561, pmad=0.5094500028171425state 0 and 5 are very similar rsmd=39.17491267570753, pmad=21.47645041032694state 0 and 6 are very similar rsmd=0.05938405577774811, pmad=0.03576228820433477state 1 and 2 are very similar rsmd=56.7093404495309, pmad=31.006648280169586state 1 and 3 are very similar rsmd=1.4737506059789753, pmad=0.7911810129353335state 1 and 4 are very similar rsmd=0.9990115158429708, pmad=0.539577484788636state 1 and 5 are very similar rsmd=39.25683788811765, pmad=21.529705276530777state 1 and 6 are very similar rsmd=0.12716010599637878, pmad=0.06690148328482394state 2 and 3 are very similar rsmd=55.24819555307654, pmad=30.215564747857854state 2 and 4 are very similar rsmd=55.724665539966054, pmad=30.468102145216807state 2 and 5 are very similar rsmd=18.503806810151364, pmad=10.160391565152606state 2 and 6 are very similar rsmd=56.58638610202965, pmad=30.941789859829612state 3 and 4 are very similar rsmd=0.5943729662552197, pmad=0.30208140013572693state 3 and 5 are very similar rsmd=37.83372142179389, pmad=20.738524263595444state 3 and 6 are very similar rsmd=1.3477781896465397, pmad=0.7262251119717608state 4 and 5 are very similar rsmd=38.25889814966755, pmad=20.99012779174214state 4 and 6 are very similar rsmd=0.8846813438304976, pmad=0.4736877146128076state 5 and 6 are very similar rsmd=39.13904098550772, pmad=21.462803793245953
 
- model9state 2 and 3 are very similar rsmd=182.75714047179298, pmad=39.85906289135739
+ model9state 0 and 1 are very similar rsmd=0.11587856192500723, pmad=0.061740755046896974state 0 and 2 are very similar rsmd=57.68491552250674, pmad=31.431756832891683state 0 and 3 are very similar rsmd=1.3344217760690436, pmad=0.725886337959754state 0 and 4 are very similar rsmd=1.3488750473339608, pmad=0.7314072621622463state 0 and 5 are very similar rsmd=47.32639118753404, pmad=25.598019834339862state 0 and 6 are very similar rsmd=0.06328213187374859, pmad=0.034257427765661715state 1 and 2 are very similar rsmd=57.80024381923674, pmad=31.493497587938574state 1 and 3 are very similar rsmd=1.4487669194559936, pmad=0.7876270930066511state 1 and 4 are very similar rsmd=1.4601697427765534, pmad=0.7931480172091431state 1 and 5 are very similar rsmd=47.432161013155195, pmad=25.65976058938676state 1 and 6 are very similar rsmd=0.17895055683602176, pmad=0.09599818281255869state 2 and 3 are very similar rsmd=56.35434127916433, pmad=30.705870494931926state 2 and 4 are very similar rsmd=56.363077394369256, pmad=30.700349570729436state 2 and 5 are very similar rsmd=19.793377817582453, pmad=11.173915380105736state 2 and 6 are very similar rsmd=57.621641942923105, pmad=31.397499405126013state 3 and 4 are very similar rsmd=0.1671163208683587, pmad=0.08139462581301649state 3 and 5 are very similar rsmd=46.03556109613256, pmad=24.872133496380112state 3 and 6 are very similar rsmd=1.271295040620947, pmad=0.6916289101940922state 4 and 5 are very similar rsmd=45.9894562562606, pmad=24.866612572177615state 4 and 6 are very similar rsmd=1.2868198806196223, pmad=0.6971498343965906state 5 and 6 are very similar rsmd=47.266335827132735, pmad=25.5637624065742
 
- Stock 0: model squared returns mean = 6.979592765705397e-07, variance = 3.63498e-11,  
- gt squared returns mean = 8.18663242068528e-07 variance = 8.776724556185093e-11 
+ Stock 0: model squared returns mean = 4.228249556595087e-07, variance = 5.5376e-12,  
+ gt squared returns mean = 4.552176471778304e-07 variance = 5.814351612160172e-12 
  
- Stock 0: model returns mean = 3.2365681388552135e-06, variance = 6.97949e-07,  
- gt returns mean = 4.574100908629961e-06 variance = 8.186423196694058e-07 
+ Stock 0: model returns mean = 6.381912253243101e-06, variance = 4.22784e-07,  
+ gt returns mean = 1.3261116370375274e-06 variance = 4.5521588860575655e-07 
  
- Stock 1: model squared returns mean = 5.152740834356453e-07, variance = 1.62729e-11,  
- gt squared returns mean = 4.568099959297394e-07 variance = 1.76489173653439e-11 
+ Stock 1: model squared returns mean = 2.281821455626909e-07, variance = 3.17133e-12,  
+ gt squared returns mean = 1.8890959035906188e-07 variance = 2.5533159641869036e-12 
  
- Stock 1: model returns mean = 3.1774953294044463e-06, variance = 5.15264e-07,  
- gt returns mean = 2.7552801965931694e-06 variance = 4.568024043607777e-07 
+ Stock 1: model returns mean = 1.65763954629691e-06, variance = 2.28179e-07,  
+ gt returns mean = 7.459377958336094e-07 variance = 1.8890903393586661e-07 
  
- Stock 2: model squared returns mean = 7.799750039324565e-07, variance = 1.85693e-09,  
- gt squared returns mean = 8.030234932640604e-07 variance = 1.8606918049341421e-09 
+ Stock 2: model squared returns mean = 2.8952759675668057e-07, variance = 3.83225e-12,  
+ gt squared returns mean = 2.7892114024183184e-07 variance = 3.711405767401386e-12 
  
- Stock 2: model returns mean = 7.023446134172839e-07, variance = 7.79975e-07,  
- gt returns mean = 1.431116536325701e-06 variance = 8.030214451695198e-07 
+ Stock 2: model returns mean = 5.635974457409493e-06, variance = 2.89496e-07,  
+ gt returns mean = 4.061216888427429e-06 variance = 2.789046467592171e-07 
  
- Stock 3: model squared returns mean = 5.895880817532396e-07, variance = 6.95209e-11,  
- gt squared returns mean = 5.097252289524361e-07 variance = 4.718449702678941e-11 
+ Stock 3: model squared returns mean = 2.1040916437564707e-07, variance = 2.88422e-12,  
+ gt squared returns mean = 2.261755186544762e-07 variance = 5.534918220396386e-12 
  
- Stock 3: model returns mean = -5.873080897500001e-07, variance = 5.89588e-07,  
- gt returns mean = 1.2821908746050821e-06 variance = 5.097235849389973e-07 
+ Stock 3: model returns mean = 1.8234035009266002e-06, variance = 2.10406e-07,  
+ gt returns mean = 7.459377958336097e-07 variance = 2.2617496223128094e-07 
  
- Stock 4: model squared returns mean = 5.93072893622892e-07, variance = 3.27366e-11,  
- gt squared returns mean = 5.001449585890308e-07 variance = 2.736936057972489e-11 
+ Stock 4: model squared returns mean = 1.9464281009681793e-07, variance = 2.3728e-12,  
+ gt squared returns mean = 2.0180933476901298e-07 variance = 2.4556889349060963e-12 
  
- Stock 4: model returns mean = 4.972997827184355e-06, variance = 5.93048e-07,  
- gt returns mean = 2.4201197303409216e-06 variance = 5.001391016095215e-07 
+ Stock 4: model returns mean = -1.7405215236117553e-06, variance = 1.9464e-07,  
+ gt returns mean = -1.4918755916672188e-06 variance = 2.01807109076232e-07 
  
- Stock 5: model squared returns mean = 9.715765410296742e-07, variance = 1.67923e-10,  
- gt squared returns mean = 8.985143023736985e-07 variance = 1.4083764099276186e-10 
+ Stock 5: model squared returns mean = 4.79010509089518e-07, variance = 6.98204e-12,  
+ gt squared returns mean = 4.933435584339081e-07 variance = 6.769209114704495e-12 
  
- Stock 5: model returns mean = 1.085385146276998e-05, variance = 9.71459e-07,  
- gt returns mean = 3.927720009429195e-06 variance = 8.98498875389226e-07 
+ Stock 5: model returns mean = 6.216148298613413e-06, variance = 4.78972e-07,  
+ gt returns mean = 9.117017504633001e-07 variance = 4.933427272338265e-07 
  
- Stock 6: model squared returns mean = 5.10302098750812e-07, variance = 8.11173e-12,  
- gt squared returns mean = 5.040960148393494e-07 variance = 1.0063758540963435e-11 
+ Stock 6: model squared returns mean = 2.4681510971039804e-07, variance = 5.44286e-12,  
+ gt squared returns mean = 2.6630805681876857e-07 variance = 5.048790186677626e-12 
  
- Stock 6: model returns mean = -7.598628752509275e-07, variance = 5.10302e-07,  
- gt returns mean = 3.0099150962783218e-06 variance = 5.040869552504625e-07 
+ Stock 6: model returns mean = -4.724272706946194e-06, variance = 2.46793e-07,  
+ gt returns mean = -7.459377958336092e-07 variance = 2.663075003955733e-07 
  
- Stock 7: model squared returns mean = 5.245467459842949e-07, variance = 6.09299e-12,  
- gt squared returns mean = 5.222381182761278e-07 variance = 7.024444122108819e-12 
+ Stock 7: model squared returns mean = 3.1561374656347066e-07, variance = 5.48646e-12,  
+ gt squared returns mean = 2.9583413846821223e-07 variance = 4.891597476416114e-12 
  
- Stock 7: model returns mean = 4.538035403912651e-06, variance = 5.24526e-07,  
- gt returns mean = 4.040580166432503e-06 variance = 5.222217919880465e-07 
+ Stock 7: model returns mean = -6.216148298613411e-06, variance = 3.15575e-07,  
+ gt returns mean = -1.9891674555562916e-06 variance = 2.9583018168104603e-07 
  
- Stock 8: model squared returns mean = 4.915585659045537e-07, variance = 5.05547e-12,  
- gt squared returns mean = 4.962811287921783e-07 variance = 5.560812052357867e-12 
+ Stock 8: model squared returns mean = 2.654480738581052e-07, variance = 4.17482e-12,  
+ gt squared returns mean = 2.8092776715004655e-07 variance = 5.133376612458831e-12 
  
- Stock 8: model returns mean = -1.2249835222948643e-06, variance = 4.91557e-07,  
- gt returns mean = 2.060708321261513e-06 variance = 4.96276882273393e-07 
+ Stock 8: model returns mean = -3.4810430472235106e-06, variance = 2.65436e-07,  
+ gt returns mean = -4.972918638890729e-07 variance = 2.8092751985084853e-07 
  
- Stock 9: model squared returns mean = 6.321931997402494e-07, variance = 1.07523e-11,  
- gt squared returns mean = 5.666100076939132e-07 variance = 1.0996429257059952e-11 
+ Stock 9: model squared returns mean = 3.1819369544546085e-07, variance = 5.76259e-12,  
+ gt squared returns mean = 3.32526744789851e-07 variance = 6.788861233672661e-12 
  
- Stock 9: model returns mean = 4.22836951858125e-07, variance = 6.32193e-07,  
- gt returns mean = 4.374186085067628e-06 variance = 5.665908741900065e-07 
+ Stock 9: model returns mean = -3.978334911112583e-06, variance = 3.18178e-07,  
+ gt returns mean = -2.3206953648156734e-06 variance = 3.3252135916287466e-07 
  

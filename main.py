@@ -10,8 +10,8 @@ from sklearn.preprocessing import StandardScaler
 from hmmlearn import hmm
 from utils import perform_PCA, state_discretization, apply_global_mapping, percentage_rsmd, percentage_mad, hidden_similarities
 from statsmodels.tsa.stattools import acf
-from scipy.spatial.distance import jensenshannon
-
+from statsmodels.graphics.tsaplots import plot_acf
+#from scipy.spatial.distance import jensenshannon
 
 seed=0
 np.random.seed(seed)
@@ -20,8 +20,8 @@ warnings.filterwarnings("ignore")
 #--PARS
 max_iterations=1000
 max_lag = 100 #maximum number of time steps for which autocorrelation is computed
-frequency_step = 10 # re-sampling minute frequency for returns
-M_target = 900000 #upper bound on number of bins
+frequency_step = 1 # re-sampling minute frequency for returns
+M_target = 10 #upper bound on number of bins
 merge=False
 #--
 saving_name = str(M_target)
@@ -39,9 +39,12 @@ logs.append(f"{original_T} observations, {num_days} days \n")
 all_stocks_returns = []  #ordered list of returns at desired freq for all n-stocks
 
 for i in range(frequency_step, original_T, frequency_step):
-    all_stocks_returns.append(np.log(stock_prices.iloc[i]/stock_prices.iloc[i-frequency_step]))
+    #if they are both related to the same day (e.g. exclude overnight returns computation)
+    if stock_prices.index[i].date()==stock_prices.index[i-frequency_step].date():
+        all_stocks_returns.append(np.log(stock_prices.iloc[i]/stock_prices.iloc[i-frequency_step]))
 
 T = len(all_stocks_returns)
+print(T)
 all_stocks_returns = np.vstack(all_stocks_returns)   #first column is referred to first stock, second column to second stock, ...
 gt_autocorr_continuous = np.zeros((max_lag, N))
 K = perform_PCA(all_stocks_returns)
@@ -55,12 +58,14 @@ for col in range(N):
     folder_name = f"model_{col}"
     os.makedirs(folder_name, exist_ok=True)
     column = all_stocks_returns[:, col] 
-    gt_autocorr_continuous[:,col] = acf(column**2, nlags=max_lag, fft=False)[1:]
-
+    acf_vals, confint = acf(column**2, nlags=max_lag, fft=False, alpha=0.05)
+    gt_autocorr_continuous[:,col] = acf_vals[1:]
+    gt_autocorr_continuous_confint = confint[1:]
     
     logs.append(f"continuous) Stock {col}: mean = {np.mean(column)}, variance = {np.var(column):.6g} \n")
     discretized_returns[:,col]=state_discretization(column, delta, z_min_idx, z_max_idx) 
     #print(f"discretized) Stock {col}: mean = {np.mean(discretized_returns[:,col])}, variance = {np.var(discretized_returns[:, col]):.6g}")
+
 
 
 all_discretized = discretized_returns.flatten()
@@ -86,16 +91,16 @@ common_initial_distr = model.startprob_.copy()
 
 for i in range(0,N):
     print(f"processing model {i+1}")
-
+    folder_name = f"model_{i}"
     try:
         X_counts = np.zeros((len(discretized_returns[:,i]), n_symbols), dtype=int)
         obs_int = apply_global_mapping(discretized_returns[:,i], global_mapping)
         X_counts[np.arange(len(obs_int)), obs_int] = 1
         model = hmm.MultinomialHMM(n_components=K, n_iter=max_iterations, random_state=seed, n_trials=n_trials) #model for stock i
         model.startprob_ = common_initial_distr
-        model.transmat_ = common_transition
-        model.params = 'e' #only emission probs shall be updated
-        model.init_params = 'e'#only emission probs are randomly initialized
+        #model.transmat_ = common_transition
+        model.params = 'te' 
+        model.init_params = 'te' 
         model.fit(X_counts)
         sim, states_tbd, rsmd_matrix, pmad_matrix = hidden_similarities(model) #return string and list of states to be deleted
         print(states_tbd)
@@ -132,6 +137,7 @@ for i in range(0,N):
     except Exception as e:
         logs.append(f"\n Error while fitting model{i}: {e}")
         print(logs[-1])
+        exit()
 
 
 
@@ -170,18 +176,24 @@ for i in range(N):
     logs.append(f"\n Stock {i}: model returns mean = {np.mean(sim_returns[:,i])}, variance = {np.var(sim_returns[:,i]):.6g},  \n gt returns mean = {np.mean(discretized_returns[:,i])} variance = {np.var(discretized_returns[:,i])} \n ")
 
     fig, axes = plt.subplots(2, 1, figsize=(6, 8))
-    gt_autocorr_discrete[:,i] = acf(discretized_returns[:, i]**2, nlags=max_lag, fft=False)[1:]
+    acf_vals, confint = acf(discretized_returns[:, i]**2, nlags=max_lag, fft=False, alpha=0.05)
+    gt_autocorr_discrete[:,i] = acf_vals[1:]
+    gt_autocorr_discrete_confint = confint[1:]
     #ymin, ymax = gt_autocorr_discrete[:, i].min(),gt_autocorr_discrete[:, i].max()
     x = range(1,max_lag+1)
     axes[0].plot(x, gt_autocorr_continuous[:,i], color="blue")
+    axes[0].fill_between(x, gt_autocorr_continuous_confint[:,0], gt_autocorr_continuous_confint[:,1], color='blue', alpha=0.2)
     axes[0].set_title("ACF for returns**2 (continuous)")
     axes[1].plot(x, gt_autocorr_discrete[:, i], color='blue', label='obs')
-
+    axes[1].fill_between(x, gt_autocorr_discrete_confint[:,0], gt_autocorr_discrete_confint[:,1], color='blue', alpha=0.1)
     try:
-        autocorr_matrix[:, i] = acf(sim_returns[:, i]**2, nlags=max_lag, fft=False)[1:]
+        acf_vals, confint= acf(sim_returns[:, i]**2, nlags=max_lag, fft=False, alpha=0.05)
+        autocorr_matrix[:, i] = acf_vals[1:] 
+        confint = confint[1:]
         #autocorr_df = pd.DataFrame(autocorr_matrix[:,i])
         #autocorr_df.to_csv(os.path.join(folder_name, savepoint_filename+"model_"+str(i)+"autocorr.csv"))
         axes[1].plot(x, autocorr_matrix[:,i], color='red',label='model')
+        axes[1].fill_between(x, confint[:,0], confint[:,1], color='red', alpha=0.2)
 
     except Exception as e:
         print(f"Error computing autocorr for stock {i}: {e}")
