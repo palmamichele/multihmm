@@ -109,7 +109,7 @@ def hidden_similarities(hmm):
             pmad_matrix[j, i] = percentage_mad(emission_matrix[j, :], emission_matrix[i, :])
 
             if j!=i and (rsmd_matrix[i, j]<50 or pmad_matrix[i, j]<50):
-                res += f"state {i} and {j} are very similar rsmd={rsmd_matrix[i, j]}, pmad={pmad_matrix[i, j]}"
+                res += f"state {i} and {j} are similar rsmd={rsmd_matrix[i, j]}, pmad={pmad_matrix[i, j]}"
                 states_tbd.add(j)
 
     return res, sorted(list(states_tbd)), rsmd_matrix, pmad_matrix

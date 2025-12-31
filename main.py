@@ -206,14 +206,16 @@ for i in range(N):
     plt.close()
 
 
-    ##...
-    # plt.figure()
-    # plt.plot(range(1,max_lag+1), acf(discretized_returns[:, i], nlags=max_lag, fft=False)[1:], marker='o')
-    # plt.title(f"gt ACF of (discretized) returns - Stock {i}")
-    # plt.axhline(0, color='black', linestyle='--')
-    # plt.grid(True)
-    # plt.savefig(os.path.join(folder_name, savepoint_filename+f"gt_returnautocorrelation_plot_{i}.png"))
-    # plt.close()
+    fig, axes = plt.subplots(2, 1, figsize=(6, 8))
+    axes[0].plot(x, acf(all_stocks_returns[:, i],nlags=max_lag, fft=False)[1:], color="blue")
+    axes[0].set_title(f"gt ACF of (continuous) returns - Stock {i}")
+    axes[1].plot(x, acf(discretized_returns[:, i], nlags=max_lag, fft=False)[1:], color="blue", label='obs')
+    axes[1].plot(x, acf(sim_returns[:, i], nlags=max_lag, fft=False)[1:], color="red", label='model')
+    axes[1].set_title(f"ACF of (discretized) returns - Stock {i}")
+    #axes[1].legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(folder_name, savepoint_filename+f"acf_returns_plot_{i}.png"))
+    plt.close()
 
     # plt.figure()
     # plt.plot(range(1,max_lag+1), acf(sim_returns[:, i], nlags=max_lag, fft=False)[1:], marker='o')
