@@ -42,13 +42,27 @@ original_T = len(stock_prices)
 logs.append(f"{original_T} observations, {num_days} days \n")
 all_stocks_returns = []  #ordered list of returns at desired freq for all n-stocks
 
+returns_dates = []
 for i in range(frequency_step, original_T, frequency_step):
     #if they are both related to the same day (e.g. exclude overnight returns computation)
     if stock_prices.index[i].date()==stock_prices.index[i-frequency_step].date():
         all_stocks_returns.append(np.log(stock_prices.iloc[i]/stock_prices.iloc[i-frequency_step]))
+        returns_dates.append(stock_prices.index[i].date())
+
+returns_dates = pd.Series(returns_dates)     
+
+counts_per_day = returns_dates.value_counts().sort_index()
+print(counts_per_day)
+
+# Check if all days have same number of observations
+if counts_per_day.nunique() == 1:
+    print(f"All days have the same number of observations: {counts_per_day.iloc[0]}")
+else:
+    print("Days have varying number of observations.")
 
 T = len(all_stocks_returns)
 print("number of returns observations", T)
+
 all_stocks_returns = np.vstack(all_stocks_returns)   #first column is referred to first stock, second column to second stock, ...
 gt_autocorr_continuous = np.zeros((max_lag, N))
 K = perform_PCA(all_stocks_returns)
@@ -160,7 +174,7 @@ for i in range(N):
     folder_name = f"model_{i}"
 
     jb_stat, p_val = jarque_bera(sim_returns[:,i]**2)
-    logs.append(f"model) Stock {i} returns: mean = {np.mean(sim_returns[:,i]**2)}, median = {np.median(sim_returns[:,i]**2)}, stdev = {np.std(sim_returns[:,i]**2)}, skewness = {skew(sim_returns[:,i]**2)}, kurtosis (Pearson) ={kurtosis(sim_returns[:,i]**2, fisher=False)}, jarque-bera {jb_stat}, jarque-bera p-value {p_val} \n")
+    logs.append(f"model) Stock {i} on squared returns: mean = {np.mean(sim_returns[:,i]**2)}, median = {np.median(sim_returns[:,i]**2)}, stdev = {np.std(sim_returns[:,i]**2)}, skewness = {skew(sim_returns[:,i]**2)}, kurtosis (Pearson) ={kurtosis(sim_returns[:,i]**2, fisher=False)}, jarque-bera {jb_stat}, jarque-bera p-value {p_val} \n")
 
   
     jb_stat, p_val = jarque_bera(sim_returns[:,i])
@@ -221,7 +235,7 @@ for i in range(N):
     #js_div = jensenshannon(hist_empirical, hist_simulated)
     #print(f"Jensen-Shannon divergence for stock {i}: {js_div}")
 
-with open(savepoint_filename+"log.txt", "w") as file:
+with open(savepoint_filename+str(M_target)+"log.txt", "w") as file:
     for l in logs:
         file.write(l)
 
