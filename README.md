@@ -11,10 +11,11 @@ conda activate myenv
 conda install -c conda-forge hmmlearn
 
 
-Install python dependencies (suggested virtual environment)
+Install python dependencies
 
 ## Usage
-Step1: Launch main.ipynb for demo illustration of the code
+Step1: Place your data (.xlsx) in data folder (see example file)
+Step2: Launch main.py for demo illustration of the code
 
 ## Related Work/Implementation
 
