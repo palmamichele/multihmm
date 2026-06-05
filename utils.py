@@ -6,6 +6,9 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 
+
+
+
 def perform_PCA(D, v_t=0.9):
     """
     Given Data matrix, and explained variance threshold, compute k-approximation of eigendecomposition
@@ -53,6 +56,27 @@ def state_discretization(log_returns, delta, z_min, z_max):
     
     discrete_returns = np.array([M(R) for R in log_returns])
     return discrete_returns
+
+def M(r, delta, z_min, z_max):
+    """
+    Discretizes the log-return process according to Change point dynamics for financial data by 
+    D'Amico, Lika, Petroni.
+    
+    Parameters:
+    r: Sequence of inputs to be discretized (R_n).
+    delta (float): Grid amplitude of the discrete state space.
+    z_min (int): Minimum index for discretization.
+    z_max (int): Maximum index for discretization.
+    
+    Returns:
+    np.ndarray: Discretized state sequence (J_n).
+
+    """
+    z = np.floor(r / delta + 0.5)
+    z = np.clip(z, z_min, z_max)
+    return delta * z
+
+
 
 def apply_global_mapping(column, mapping):
     return np.array([mapping[v] for v in column]).astype(int)
