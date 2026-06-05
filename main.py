@@ -14,7 +14,7 @@ np.random.seed(seed)
 #PARS
 max_iterations=1000
 max_lags = 100 #for acf 
-M_target=10
+M_target=80
 frequency_step = 1 # re-sampling minute frequency for returns
 variance_thr=0.9
 data_path = "data/data.xlsx"
