@@ -14,7 +14,6 @@ np.random.seed(seed)
 #PARS
 max_iterations=1000
 max_lags = 100 #for acf 
-M_target=80
 frequency_step = 1 # re-sampling minute frequency for returns
 variance_thr=0.9
 data_path = "data/data.xlsx"
@@ -72,23 +71,13 @@ for i in range(N):
     R = R_obs[:, i]
 
     #we make saturation coincides with the extremas
-    # r_min = np.min(column)
-    # r_max = np.max(column)
-    # delta= 0.05 * np.std(column)
-    # z_min = np.floor(r_min/delta -0.5).astype(int)
-    # z_max = np.floor(r_max/delta +0.5).astype(int)
-    #discretized_returns[:,col]=M(column, delta, z_min, z_max) 
+    r_min = np.min(R)
+    r_max = np.max(R)
+    delta= 0.2 * np.std(R)
+    z_min = np.floor(r_min/delta -0.5).astype(int)
+    z_max = np.floor(r_max/delta +0.5).astype(int)
 
-    #what if we use this discretization but per stock?
-    z_min = np.min(R) - 3*np.std(R) 
-    z_max = np.max(R) + 3*np.std(R)
-    delta = (z_max - z_min) / M_target
-    z_min_idx = int(np.floor(z_min / delta))
-    z_max_idx = int(np.ceil(z_max / delta))
-
-   
-
-    J = state_discretization(R, delta, z_min_idx, z_max_idx) 
+    J = state_discretization(R, delta, z_min, z_max) 
     J_obs[:,i] = J
 
     unique_vals_global = np.unique(J)

@@ -1,17 +1,23 @@
 # multiHMM
-A multi hidden markov model for stock returns
+A shared multi hidden markov model for stock returns
 
 Version 1.0,  Copyright(c) April, 2025. 
 
 ## Installation
-Clone the repository using git clone command or manual download,
 
-conda create -n myenv python=3.11
-conda activate myenv
-conda install -c conda-forge hmmlearn
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/palmamichele/multihmm
+cd multihmm
+
+### 2. Create a Python virtual environment
+python3 -m venv venv
+source venv/bin/activate
 
 
-Install python dependencies
+### 3. Install dependencies
+pip install -r requirements.txt
 
 ## Usage
 Step1: Place your data (.xlsx) in data folder (see example file)

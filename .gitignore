@@ -12,3 +12,6 @@ data/
 
 *.xlsx
 .DS_Store
+
+.csv
+.png
