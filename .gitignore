@@ -15,3 +15,7 @@ data/
 
 .csv
 .png
+
+.gitignore
+
+.DS_Store
