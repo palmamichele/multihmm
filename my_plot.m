@@ -1,4 +1,3 @@
-
 J_obs = readtable("J_obs.csv");
 R_obs = readtable("R_obs.csv");
 Jsim_obs = readtable("Jsim.csv");
