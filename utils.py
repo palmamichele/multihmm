@@ -51,13 +51,31 @@ def state_discretization(log_returns, delta, z_min, z_max):
     np.ndarray: Discretized state sequence J_n.
     """
     def M(R):
-        i = np.ceil(R / delta - 0.5)
+        i = np.floor(R / delta + 0.5)
         return np.clip(i, z_min, z_max) * delta 
     
     discrete_returns = np.array([M(R) for R in log_returns])
     return discrete_returns
 
 
+def fpt_from_log_returns(log_returns, rho=1.005):
+    threshold = np.log(rho)
+
+    n = len(log_returns)
+    fpts = []
+
+    for start in range(n): #investment starting time t
+        cum = 0.0
+
+        for tau in range(1, n-start):
+            #cum = sum(log_returns[start : start + tau])
+            cum += log_returns[start + tau - 1]
+
+            if cum >= threshold: #ignore times for which start never hits the target before the sample ends
+                fpts.append(tau)
+                break
+
+    return np.array(fpts)
 
 
 

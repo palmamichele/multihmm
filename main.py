@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from hmmlearn import hmm
 from statsmodels.tsa.stattools import acf
 from scipy.stats import jarque_bera, skew, kurtosis
-from utils import perform_PCA, state_discretization, apply_global_mapping
+from utils import perform_PCA, state_discretization, apply_global_mapping, fpt_from_log_returns
 
 
 seed=0
@@ -73,7 +73,7 @@ for i in range(N):
     #we make saturation coincides with the extremas
     r_min = np.min(R)
     r_max = np.max(R)
-    delta= 0.2 * np.std(R)
+    delta= 0.2 * np.std(R, ddof=1)
     z_min = np.floor(r_min/delta -0.5).astype(int)
     z_max = np.floor(r_max/delta +0.5).astype(int)
 
@@ -183,6 +183,27 @@ for i in range(N):
 
     #gt_autocorr_continuous_confint = confint[1:]
 
+    rho_fpts= 1.005
+    fpts= fpt_from_log_returns(J, rho=rho_fpts)
+    taus, counts = np.unique(fpts, return_counts=True)
+    probs = counts / counts.sum()
+    plt.bar(taus, probs)
+    plt.xlabel("First passage time")
+    plt.ylabel("Probability")
+    plt.title("First Passage Time Distribution for J")
+    plt.savefig(os.path.join(folder_name, f"fpts_J_{i}.png"))
+    plt.close()
+
+    fpts= fpt_from_log_returns(J_hat, rho=rho_fpts)
+    taus, counts = np.unique(fpts, return_counts=True)
+    probs = counts / counts.sum()
+
+    plt.bar(taus, probs)
+    plt.xlabel("First passage time")
+    plt.ylabel("Probability")
+    plt.title("First Passage Time Distribution for J_hat")
+    plt.savefig(os.path.join(folder_name, f"fpts_Jsim_{i}.png"))
+    plt.close()
 
 
     for idx, var in enumerate([R, J, J_hat]):
@@ -251,9 +272,16 @@ for i in range(N):
         # plt.close()
 
 
+
+
 pd.DataFrame(R_obs, columns=prices.columns).to_csv("R_obs.csv", index=False)
 pd.DataFrame(J_obs, columns=prices.columns).to_csv("J_obs.csv", index=False)
 pd.DataFrame(Jsim, columns=prices.columns).to_csv("Jsim.csv", index=False)
 stats[0].to_csv("R_stats.csv", index=False)
 stats[1].to_csv("J_stats.csv", index=False)
 stats[2].to_csv("Jsim_stats.csv", index=False)
+
+
+
+
+
