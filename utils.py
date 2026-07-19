@@ -1,45 +1,92 @@
 import numpy as np
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
+from math import gcd
+from functools import reduce
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from scipy.sparse.csgraph import connected_components
+from scipy.sparse import csr_matrix
 
 
+seed=0
+np.random.seed(seed)
 
 
+def save_acf_csv(filename, acf_series, confint, lags, folder_name):
+    data = pd.DataFrame({
+        "lag": lags,
+        "acf": acf_series[1:],
+        "lower": confint[1:, 0],
+        "upper": confint[1:, 1]
+    })
 
-def perform_PCA(D, v_t=0.9):
+    data.to_csv(
+        os.path.join(folder_name, filename),
+        index=False
+    )
+
+def perform_PCA(D, v_t=0.9, asset_names=None):
     """
     Given Data matrix, and explained variance threshold, compute k-approximation of eigendecomposition
     """
     pca = PCA()
     scaler = StandardScaler()  ##standardize the data
     standardized_data = scaler.fit_transform(D) #column-wise standardization
-    pca.fit(standardized_data)
+    
+    scores = pca.fit_transform(standardized_data)   
 
     explained_variance = pca.explained_variance_ratio_
-    cumulative_variance = np.cumsum(explained_variance)  # cumulative sum
+    cumulative_variance = np.cumsum(explained_variance) 
+    eigenvalues = pca.explained_variance_
 
-    plt.plot(range(1, len(cumulative_variance) + 1), cumulative_variance, marker='o')
-    plt.title('Cumulative Explained Variance by Principal Components')
-    plt.xlabel('Number of Principal Components')
-    plt.ylabel('Cumulative Explained Variance')
-    plt.grid(True)
-    plt.savefig("kPCA_cumulative.png")
+
+    # plt.plot(range(1, len(cumulative_variance) + 1), cumulative_variance, marker='o')
+    # plt.title('Cumulative Explained Variance by Principal Components')
+    # plt.xlabel('Number of Principal Components')
+    # plt.ylabel('Cumulative Explained Variance')
+    # plt.grid(True)
+    # plt.savefig("kPCA_cumulative.png")
     #plt.show()
     #print("Eigenvalues (Explained Variance):", pca.explained_variance_) 
     #print("Cumulative Explained Variance:", cumulative_variance)
     k = np.argmax(cumulative_variance >= v_t) + 1  # +1 because index starts from 0
     #minimum number of components that first reaches the thresh of  variance
-    print("PCA k=", k)
-    return k
+    if asset_names is None:
+        asset_names = [f"Asset{i+1}" for i in range(D.shape[1])]
+    loadings = pd.DataFrame(
+        pca.components_.T,
+        index=[f"stock{i+1}" for i in range(len(explained_variance))],
+        columns=[f"PC{i+1}" for i in range(len(explained_variance))]
+    )
+
+    scores = pd.DataFrame(
+        scores,
+        columns=[f"PC{i+1}" for i in range(len(explained_variance))]
+    )
+
+    return (
+        k,
+        loadings,
+        scores,
+        explained_variance,
+        cumulative_variance,
+        eigenvalues,
+    )
+
+
+
+
+
+
+
+
 
 
 def state_discretization(log_returns, delta, z_min, z_max):
     """
-    Discretizes the log-return process according to Changepointdynamicsforfinancialdata: anindexedMarkovchainapproach by 
-    DAmico, Lika, Petroni.
+    Discretizes the log-return process according to Change point dynamics for financial data: an indexed Markov chain approach by 
+    D'Amico, Lika, Petroni.
     
     Parameters:
     log_returns: Sequence of log-returns.
@@ -80,7 +127,7 @@ def fpt_from_log_returns(log_returns, rho=1.005):
 
 
 def apply_global_mapping(column, mapping):
-    return np.array([mapping[v] for v in column]).astype(int)
+    return np.array([mapping[v] for v in column])
 
 def get_symbols_for_discretized(stock_discretized_returns):
     unique_vals = np.unique(stock_discretized_returns) #map stock i discretized returns to 0..M-1 symbols (required by hmm implementation)
@@ -138,3 +185,85 @@ def hidden_similarities(hmm):
                 states_tbd.add(j)
 
     return res, sorted(list(states_tbd)), rsmd_matrix, pmad_matrix
+
+
+
+def check_stochastic(P, atol=1e-10):
+    P = np.asarray(P, dtype=float)
+
+    if np.any(P < -atol):
+        raise ValueError("Matrix contains negative entries.")
+
+    if not np.allclose(P.sum(axis=1), 1.0, atol=atol):
+        raise ValueError("Rows do not sum to 1.")
+
+    return P
+
+
+
+
+def js_distance(P, Q, eps=1e-15):
+
+    # add tiny pseudocounts
+    P = P + eps
+    Q = Q + eps
+
+    # renormalize rows
+    P = P / P.sum(axis=1, keepdims=True)
+    Q = Q / Q.sum(axis=1, keepdims=True)
+
+    M = 0.5 * (P + Q)
+
+  
+    kl_pm = np.sum(P * np.log2(P / M), axis=1)
+    kl_qm = np.sum(Q * np.log2(Q / M), axis=1)
+
+    return np.sqrt(0.5 * (kl_pm + kl_qm))
+
+
+def total_variation(P, Q):
+    P = check_stochastic(P)
+    Q = check_stochastic(Q)
+
+    # distance for each row
+    return 0.5 * np.abs(P - Q).sum(axis=1)
+
+def regime_durations(P):
+    return 1 / (1 - np.diag(P))
+
+def is_irreducible(P):
+    graph = csr_matrix(P > 0)
+    n_components, _ = connected_components(
+        graph,
+        directed=True,
+        connection='strong'
+    )
+    return n_components == 1
+
+
+
+def period(P, max_power=100):
+    n = P.shape[0]
+    powers = np.eye(n)
+    periods = []
+
+    for k in range(1, max_power + 1):
+        powers = powers @ P
+        if powers[0, 0] > 1e-12:
+            periods.append(k)
+
+    return reduce(gcd, periods)
+
+
+def stationary_distribution(P):
+    n = P.shape[0]
+
+    A = P.T - np.eye(n)
+
+    # replace one equation with normalization
+    A[-1] = np.ones(n)
+
+    b = np.zeros(n)
+    b[-1] = 1
+
+    return np.linalg.solve(A, b)
