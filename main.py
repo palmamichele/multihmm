@@ -1,6 +1,7 @@
 import numpy as np 
 import pandas as pd 
 import os
+import sys
 import time
 import matplotlib.pyplot as plt
 from hmmlearn import hmm
@@ -8,6 +9,21 @@ from statsmodels.tsa.stattools import acf
 from scipy.stats import jarque_bera, skew, kurtosis
 from utils import perform_PCA, state_discretization, apply_global_mapping, fpt_from_log_returns, save_acf_csv
 from scipy.stats import entropy, wasserstein_distance
+
+
+class Tee:
+    def __init__(self, *files):
+        self.files = files
+
+    def write(self, data):
+        for f in self.files:
+            f.write(data)
+            f.flush()
+
+    def flush(self):
+        for f in self.files:
+            f.flush()
+
 
 seed=0
 np.random.seed(seed)
@@ -20,7 +36,14 @@ variance_thr=0.9
 data_path = "data/data.xlsx"
 out_path = "out"
 ablation_path = "out_abl"
+log_path = "log.txt"
 ###
+
+
+
+log_file = open(log_path, "w", encoding="utf-8")
+sys.stdout = Tee(sys.__stdout__, log_file)
+sys.stderr = Tee(sys.__stderr__, log_file)
 
 os.makedirs(out_path, exist_ok=True)
 prices = pd.read_excel(data_path, index_col=0, parse_dates=True)
@@ -29,10 +52,7 @@ N = len(prices.iloc[0])
 T_original = len(prices)
 days = sorted(set(prices.index.date))
 num_days = len(days)
-
 R_obs = []
-estimation_times = []
-
 for i in range(frequency_step, T_original, frequency_step):
     #if they are both related to the same day (e.g. exclude overnight returns computation)
     if prices.index[i].date()==prices.index[i-frequency_step].date():
@@ -41,8 +61,6 @@ for i in range(frequency_step, T_original, frequency_step):
 
 T = len(R_obs)
 R_obs = np.vstack(R_obs)   #first column is referred to first stock, second column to second stock, ...
-
-
 K, loadings, scores, explained_var, cumulative_var, eigenvalues = \
     perform_PCA(R_obs, variance_thr, prices.columns)
 
@@ -59,11 +77,13 @@ pd.DataFrame({
 
 J_obs = np.zeros_like(R_obs)
 Jsim = np.zeros_like(R_obs)
-R_stats = pd.DataFrame(columns=['Stock','Mean','Median','Stdev','Skewness','Kurtosis','JB Stat','JB p-value'])
-J_stats = pd.DataFrame(columns=['Stock','Mean','Median','Stdev','Skewness','Kurtosis','JB Stat', 'JB p-value'])
-Jsim_stats = pd.DataFrame(columns=['Stock','Mean','Median','Stdev','Skewness','Kurtosis','JB Stat', 'JB p-value'])
+Jsim_abl = np.zeros_like(R_obs)
+R_stats = pd.DataFrame(columns=['Stock','Mean','Stdev','Skewness','Kurtosis','JB Stat','JB p-value'])
+J_stats = pd.DataFrame(columns=['Stock','Mean','Stdev','Skewness','Kurtosis','JB Stat', 'JB p-value'])
+Jsim_stats = pd.DataFrame(columns=['Stock','Mean','Stdev','Skewness','Kurtosis','JB Stat', 'JB p-value'])
+Jsim_abl_stats = pd.DataFrame(columns=['Stock','Mean','Stdev','Skewness','Kurtosis','JB Stat', 'JB p-value'])
 
-stats = [R_stats, J_stats, Jsim_stats]
+stats = [R_stats, J_stats, Jsim_stats, Jsim_abl_stats]
 hmm_models=[]
 comparisons_ftp =[]
 lags = np.arange(1, max_lags + 1)
@@ -71,9 +91,11 @@ lags = np.arange(1, max_lags + 1)
 nbins=30 #for R
 
 for i in range(N):
-
     folder_name = os.path.join(out_path, f"model_{i}")
+
+    abl_folder_name = os.path.join(ablation_path, f"model_{i}")
     os.makedirs(folder_name, exist_ok=True)
+    os.makedirs(abl_folder_name, exist_ok=True)
 
     R = R_obs[:, i]
 
@@ -142,40 +164,11 @@ for i in range(N):
     )
 
     
-
-    # pd.DataFrame({
-    #     "center": states,
-    #     "density": J_density
-    # }).to_csv(
-    #     os.path.join(
-    #         folder_name,
-    #         f"J_hist_{i}.csv"
-    #     ),
-    #     index=False
-    # )
-
-
-    # pd.DataFrame({
-    #     "center": states,
-    #     "density": Jsim_density
-    # }).to_csv(
-    #     os.path.join(
-    #         folder_name,
-    #         f"Jsim_hist_{i}.csv"
-    #     ),
-    #     index=False
-    # )
-
-
     unique_vals_global = np.unique(J)
     global_mapping = {v:i for i,v in enumerate(unique_vals_global)} #given symbol v map it in {0,1,...,n_symbols-1}
     global_inverse_mapping = {i:v for v,i in global_mapping.items()}
     n_symbols = len(global_mapping) 
-
-
     obs_int = apply_global_mapping(J, global_mapping).astype(int) #apply (state) index mapping 
-
-    #print(obs_int)
 
 
     X_counts = np.asarray(obs_int, dtype=int).reshape(-1, 1)
@@ -184,9 +177,12 @@ for i in range(N):
         start = time.perf_counter()
         model.fit(X_counts)
         elapsed = time.perf_counter() - start
-
         common_transition = model.transmat_.copy()
         common_initial_distr = model.startprob_.copy()
+        #the first model is already randomly initialized 
+        model_abl = model
+        elapsed_abl = elapsed
+
 
     else:
         model =hmm.CategoricalHMM(n_components=K, n_iter=max_iterations, random_state=seed, n_features=n_symbols, init_params='e',  params='te')
@@ -198,30 +194,38 @@ for i in range(N):
         model.fit(X_counts)
         elapsed = time.perf_counter() - start
 
+        #ablation
+        model_abl =hmm.CategoricalHMM(n_components=K, n_iter=max_iterations, random_state=seed, n_features=n_symbols)
+        start_abl = time.perf_counter()
+        model_abl.fit(X_counts)
+        elapsed_abl = time.perf_counter() - start_abl
+
+
 
     assert model.n_features==n_symbols
-
     hmm_models.append(model)
     print(f"Model {i} ({prices.columns[i]}) estimated in {elapsed:.3f} seconds")
+    print(f"Model {i} converged? {model.monitor_.converged}")
+    print(f"ablation Model {i} ({prices.columns[i]}) estimated in {elapsed_abl:.3f} seconds")
+    print(f"ablation Model {i} converged? {model_abl.monitor_.converged}")
 
-    estimation_times.append({
-        "Stock": prices.columns[i],
-        "Time_seconds": elapsed
-    })
+
     emission_matrix = model.emissionprob_  #(K x n_symbols)
     state_names = [f"S_{k}" for k in range(len(emission_matrix))]
     emission_names = [str(global_inverse_mapping[k]) for k in range(n_symbols)]
-
     print(f"model_{i} has {len(emission_names)} emissions")
 
     
     pd.DataFrame(emission_matrix, index=state_names, columns= emission_names).T.to_csv(os.path.join(folder_name, "model_"+str(i)+"emissions.csv"))
+    pd.DataFrame(model_abl.emissionprob_, index=state_names, columns= emission_names).T.to_csv(os.path.join(abl_folder_name, "model_abl_"+str(i)+"emissions.csv"))
     #pd.DataFrame(model.startprob_,index=state_names).to_csv(os.path.join(folder_name, "model_"+str(i)+"startprob.csv"))
     pd.DataFrame(model.transmat_,index=state_names, columns=state_names).to_csv(os.path.join(folder_name, "model_"+str(i)+"trans.csv"))
+    pd.DataFrame(model_abl.transmat_,index=state_names, columns=state_names).to_csv(os.path.join(abl_folder_name, "model_abl_"+str(i)+"trans.csv"))
 
     o,z=model.sample(n_samples=T)
     J_hat = np.array([global_inverse_mapping[index] for index in o.flatten()])
     Jsim [:, i] = J_hat
+
 
     Jsim_density, _ = np.histogram(
         J_hat,
@@ -243,6 +247,31 @@ for i in range(N):
         index=False
     )
 
+    
+    o_abl,z_abl=model_abl.sample(n_samples=T)
+    J_hat_abl = np.array([global_inverse_mapping[index] for index in o_abl.flatten()])
+    Jsim_abl [:, i] = J_hat_abl
+
+    Jsim_density_abl, _ = np.histogram(
+        J_hat_abl,
+        bins=J_edges,
+        density=True
+    )
+
+    pd.DataFrame({
+        "center": states,
+        "difference": J_density - Jsim_density_abl,
+        "J": J_density,
+        "Jsim": Jsim_density_abl
+    }).to_csv(
+        os.path.join(
+            abl_folder_name,
+            f"hist_difference_abl_{i}.csv"
+        ),
+        index=False
+    )
+
+    
 
    
     acf_vals, confint = acf(R, nlags=max_lags, fft=False, alpha=0.05)
@@ -305,12 +334,29 @@ for i in range(N):
     )
 
 
+
+    acf_vals, confint = acf(J_hat_abl, nlags=max_lags, fft=False, alpha=0.05)
+    save_acf_csv(
+        f"acf_Jsim_abl_{i}.csv",
+        acf_vals,
+        confint,
+        lags,
+        abl_folder_name
+    )
+
+
+    acf_vals, confint = acf(J_hat_abl**2, nlags=max_lags, fft=False, alpha=0.05)
+    save_acf_csv(
+        f"acf_Jsimsqrd_abl_{i}.csv",
+        acf_vals,
+        confint,
+        lags,
+        abl_folder_name
+    )
+
+
     
-
-
-
     rho_values = [1.0025, 1.005, 1.01, 1.02]
-
     for rho in rho_values:
 
         #fpts_R = fpt_from_log_returns(R, rho=rho)
@@ -318,6 +364,8 @@ for i in range(N):
         fpts_J= fpt_from_log_returns(J, rho=rho)
         
         fpts_Jsim= fpt_from_log_returns(J_hat, rho=rho)
+
+        #fpts_Jsim_abl= fpt_from_log_returns(J_hat_abl, rho=rho)
         
         
         taus = np.union1d(fpts_J, fpts_Jsim)
@@ -354,7 +402,7 @@ for i in range(N):
         })
 
     
-    for idx, var in enumerate([R, J, J_hat]):
+    for idx, var in enumerate([R, J, J_hat, J_hat_abl]):
         jb_stat, p_val = jarque_bera(var)
 
         stats[idx] = pd.concat([stats[idx], pd.DataFrame({
@@ -398,6 +446,10 @@ stats[1].to_csv(
 
 stats[2].to_csv(
     os.path.join(out_path, "Jsim_stats.csv"), index=False
+)
+
+stats[3].to_csv(
+    os.path.join(ablation_path, "Jsim_abl_stats.csv"), index=False
 )
 
 

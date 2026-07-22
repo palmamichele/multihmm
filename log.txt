@@ -1,15 +1,50 @@
-Model 0 (UnitedHealth Group Inc) estimated in 35.469 seconds
+Model 0 (UnitedHealth Group Inc) estimated in 35.027 seconds
+Model 0 converged? True
+ablation Model 0 (UnitedHealth Group Inc) estimated in 35.027 seconds
+ablation Model 0 converged? True
 model_0 has 76 emissions
-Model 1 (Johnson & Johnson) estimated in 9.232 seconds
+Model 1 (Johnson & Johnson) estimated in 9.330 seconds
+Model 1 converged? True
+ablation Model 1 (Johnson & Johnson) estimated in 29.157 seconds
+ablation Model 1 converged? True
 model_1 has 82 emissions
-Model 2 (Walmart Inc) estimated in 9.353 seconds
+Model 2 (Walmart Inc) estimated in 9.372 seconds
+Model 2 converged? True
+ablation Model 2 (Walmart Inc) estimated in 26.604 seconds
+ablation Model 2 converged? True
 model_2 has 77 emissions
-Model 3 (Verizon Communications Inc) estimated in 17.331 seconds
+Model 3 (Verizon Communications Inc) estimated in 17.482 seconds
+Model 3 converged? True
+ablation Model 3 (Verizon Communications Inc) estimated in 16.749 seconds
+ablation Model 3 converged? True
 model_3 has 94 emissions
-Model 4 (McDonald's Corp) estimated in 5.035 seconds
+Model 4 (McDonald's Corp) estimated in 5.042 seconds
+Model 4 converged? True
+ablation Model 4 (McDonald's Corp) estimated in 27.006 seconds
+ablation Model 4 converged? True
 model_4 has 73 emissions
-Model 5 (Nextera Energy Inc) estimated in 6.724 seconds
+Model 5 (Nextera Energy Inc) estimated in 6.667 seconds
+Model 5 converged? True
+ablation Model 5 (Nextera Energy Inc) estimated in 11.666 seconds
+ablation Model 5 converged? True
 model_5 has 79 emissions
-
-
-ablation study:
+Model 6 (Duke Energy Corp) estimated in 6.369 seconds
+Model 6 converged? True
+ablation Model 6 (Duke Energy Corp) estimated in 29.902 seconds
+ablation Model 6 converged? True
+model_6 has 92 emissions
+Model 7 (Southern Co) estimated in 8.825 seconds
+Model 7 converged? True
+ablation Model 7 (Southern Co) estimated in 27.737 seconds
+ablation Model 7 converged? True
+model_7 has 91 emissions
+Model 8 (Dominion Energy Inc) estimated in 4.621 seconds
+Model 8 converged? True
+ablation Model 8 (Dominion Energy Inc) estimated in 38.195 seconds
+ablation Model 8 converged? True
+model_8 has 90 emissions
+Model 9 (Consolidated Edison Inc) estimated in 3.546 seconds
+Model 9 converged? True
+ablation Model 9 (Consolidated Edison Inc) estimated in 18.144 seconds
+ablation Model 9 converged? True
+model_9 has 96 emissions
