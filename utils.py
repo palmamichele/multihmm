@@ -7,6 +7,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from scipy.sparse.csgraph import connected_components
 from scipy.sparse import csr_matrix
+from scipy.optimize import linear_sum_assignment
 
 
 seed=0
@@ -76,7 +77,50 @@ def perform_PCA(D, v_t=0.9, asset_names=None):
 
 
 
+def find_permuted_hungarian(P, Q, X, Y):
 
+    #solve hungarian assignment, to find permutation matrix \PI s.t. P \approx \PI Q \PI^\top, exploiting the embeddings
+    # X: embeddings of P states, shape (K, d)
+    # Y: embeddings of Q states, shape (K, d)
+
+    K = X.shape[0]
+
+    # Construct cost matrix
+    C = np.zeros((K, K))
+
+    for i in range(K):
+        for j in range(K):
+            C[i, j] = np.linalg.norm(X[i] - Y[j])**2
+
+    # Hungarian algorithm
+    row_ind, col_ind = linear_sum_assignment(C)
+
+    # row_ind[i] is a P state
+    # col_ind[i] is the matched Q state
+
+    pi = col_ind
+
+    print("Matching:")
+    for i, j in zip(row_ind, col_ind):
+        print(f"P state {i} <--> Q state {j}")
+
+    # Total optimal cost
+    cost = C[row_ind, col_ind].sum()
+
+    print("Total cost:", cost)
+    Pi = np.zeros((K, K))
+
+    for i in range(K):
+        Pi[i, pi[i]] = 1
+
+    Q_aligned = Pi @ Q @ Pi.T
+
+    transition_error = np.linalg.norm(
+        P - Q_aligned,
+        ord='fro'
+    )**2
+
+    return Q_aligned, pi
 
 
 
@@ -267,3 +311,155 @@ def stationary_distribution(P):
     b[-1] = 1
 
     return np.linalg.solve(A, b)
+
+
+def format_return(x):
+    return f"{x}" #f"{100 * x:.2f}%"
+
+
+def global_quartile_emission_matrix(
+    df,
+    state_probabilities
+):
+    """
+    Convert a state-specific HMM emission matrix from
+    (n_states x n_returns) to (n_states x 4) using
+    global quartile return boundaries.
+    """
+
+    P_original = df.to_numpy(dtype=float)
+    symbols = df.index.astype(float).to_numpy()
+    state_names = df.columns.to_numpy()
+
+
+    sort_idx = np.argsort(symbols)
+    symbols_sorted = symbols[sort_idx]
+    P_sorted = P_original[sort_idx, :]
+    state_probability_sums = P_sorted.sum(axis=0)
+
+    if not np.allclose(
+        state_probability_sums,
+        1.0,
+        atol=1e-6
+    ):
+        print(
+            "emission probabilities do not sum to 1 "
+            "for all states."
+        )
+
+        print(
+            "Sums:",
+            state_probability_sums
+        )
+
+    n_states = P_sorted.shape[1]
+    
+    state_probabilities = np.asarray(
+        state_probabilities,
+        dtype=float
+    )
+
+    if len(state_probabilities) != n_states:
+        raise ValueError(
+            "number of states in stationary distr. does not match the number of hidden states."
+        )
+
+    state_probabilities = (
+        state_probabilities
+        / state_probabilities.sum()
+    ) #numerical check
+
+    P_global = (
+        P_sorted
+        @ state_probabilities
+    )
+
+    global_cdf = np.cumsum(P_global)
+    quartile_levels = np.array([
+        0.25,
+        0.50,
+        0.75
+    ])
+
+    quartile_indices = np.searchsorted(
+        global_cdf,
+        quartile_levels,
+        side="left"
+    )
+
+    quartiles = symbols_sorted[
+        quartile_indices
+    ]
+
+    Q25, Q50, Q75 = quartiles
+
+
+    #each return is assigned to one of four intervals (quartiles):
+    bin_indices = np.digitize(
+        symbols_sorted,
+        bins=quartiles,
+        right=True
+    )
+
+    n_bins = 4
+    P_quartile = np.zeros(
+        (n_states, n_bins)
+    )
+
+    for k in range(n_bins):
+        #select returns belonging to bin k
+        mask = bin_indices == k
+
+        #sum probabilities for each hidden state
+        P_quartile[:, k] = (
+            P_sorted[mask, :]
+            .sum(axis=0)
+        )
+
+
+    return_labels = [
+        f"<={format_return(Q25)}",
+
+        f"({format_return(Q25)},{format_return(Q50)}]",
+
+        f"({format_return(Q50)}, {format_return(Q75)}]",
+
+        f">{format_return(Q75)}"
+    ]
+
+
+    P_quartile_df = pd.DataFrame(
+        P_quartile,
+        index=state_names,
+        columns= return_labels
+    )
+
+
+
+    bins = pd.DataFrame({
+        "lower_bound": [
+            -np.inf,
+            Q25,
+            Q50,
+            Q75
+        ],
+
+        "upper_bound": [
+            Q25,
+            Q50,
+            Q75,
+            np.inf
+        ]
+    }, index=return_labels)
+
+
+
+    return {
+        "P_original": P_sorted,
+        "P_global": P_global,
+        "global_cdf": global_cdf,
+        "quartiles": quartiles,
+        "bins": bins,
+        "P_quartile": P_quartile_df
+    }
+

@@ -19,6 +19,7 @@ frequency_step = 1 # re-sampling minute frequency for returns
 variance_thr=0.9
 data_path = "data/data.xlsx"
 out_path = "out"
+ablation_path = "out_abl"
 ###
 
 os.makedirs(out_path, exist_ok=True)
@@ -112,9 +113,7 @@ for i in range(N):
     r_min = np.min(R)
     r_max = np.max(R)
 
-    print(r_min)
-    print(r_max)
-
+    
     delta= 0.2 * np.std(R, ddof=1)
     z_min = np.floor(r_min/delta -0.5).astype(int)
     z_max = np.floor(r_max/delta +0.5).astype(int)
@@ -174,7 +173,6 @@ for i in range(N):
     n_symbols = len(global_mapping) 
 
 
-    print(f"processing model {i}")
     obs_int = apply_global_mapping(J, global_mapping).astype(int) #apply (state) index mapping 
 
     #print(obs_int)
@@ -214,6 +212,7 @@ for i in range(N):
     state_names = [f"S_{k}" for k in range(len(emission_matrix))]
     emission_names = [str(global_inverse_mapping[k]) for k in range(n_symbols)]
 
+    print(f"model_{i} has {len(emission_names)} emissions")
 
     
     pd.DataFrame(emission_matrix, index=state_names, columns= emission_names).T.to_csv(os.path.join(folder_name, "model_"+str(i)+"emissions.csv"))
@@ -361,7 +360,7 @@ for i in range(N):
         stats[idx] = pd.concat([stats[idx], pd.DataFrame({
         'Stock': [prices.columns[i]],
         'Mean': [np.mean(var)],
-        'Median': [np.median(var)],
+        #'Median': [np.median(var)], it is zero for all our returns
         'Stdev': [np.std(var)],
         'Skewness': [skew(var)],
         'Kurtosis': [kurtosis(var, fisher=False)],
@@ -369,8 +368,6 @@ for i in range(N):
         'JB p-value': [p_val]
         })], ignore_index=True)
         
-
-        fig, axes = plt.subplots(2, 1, figsize=(6, 8))
 
        
 

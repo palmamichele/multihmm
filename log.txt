@@ -1,0 +1,15 @@
+Model 0 (UnitedHealth Group Inc) estimated in 35.469 seconds
+model_0 has 76 emissions
+Model 1 (Johnson & Johnson) estimated in 9.232 seconds
+model_1 has 82 emissions
+Model 2 (Walmart Inc) estimated in 9.353 seconds
+model_2 has 77 emissions
+Model 3 (Verizon Communications Inc) estimated in 17.331 seconds
+model_3 has 94 emissions
+Model 4 (McDonald's Corp) estimated in 5.035 seconds
+model_4 has 73 emissions
+Model 5 (Nextera Energy Inc) estimated in 6.724 seconds
+model_5 has 79 emissions
+
+
+ablation study:
