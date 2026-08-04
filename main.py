@@ -217,10 +217,10 @@ for i in range(N):
 
     
     pd.DataFrame(emission_matrix, index=state_names, columns= emission_names).T.to_csv(os.path.join(folder_name, "model_"+str(i)+"emissions.csv"))
-    pd.DataFrame(model_abl.emissionprob_, index=state_names, columns= emission_names).T.to_csv(os.path.join(abl_folder_name, "model_abl_"+str(i)+"emissions.csv"))
+    pd.DataFrame(model_abl.emissionprob_, index=state_names, columns= emission_names).T.to_csv(os.path.join(abl_folder_name, "model_"+str(i)+"emissions.csv"))
     #pd.DataFrame(model.startprob_,index=state_names).to_csv(os.path.join(folder_name, "model_"+str(i)+"startprob.csv"))
     pd.DataFrame(model.transmat_,index=state_names, columns=state_names).to_csv(os.path.join(folder_name, "model_"+str(i)+"trans.csv"))
-    pd.DataFrame(model_abl.transmat_,index=state_names, columns=state_names).to_csv(os.path.join(abl_folder_name, "model_abl_"+str(i)+"trans.csv"))
+    pd.DataFrame(model_abl.transmat_,index=state_names, columns=state_names).to_csv(os.path.join(abl_folder_name, "model_"+str(i)+"trans.csv"))
 
     o,z=model.sample(n_samples=T)
     J_hat = np.array([global_inverse_mapping[index] for index in o.flatten()])
@@ -266,7 +266,7 @@ for i in range(N):
     }).to_csv(
         os.path.join(
             abl_folder_name,
-            f"hist_difference_abl_{i}.csv"
+            f"hist_difference_{i}.csv"
         ),
         index=False
     )
@@ -337,7 +337,7 @@ for i in range(N):
 
     acf_vals, confint = acf(J_hat_abl, nlags=max_lags, fft=False, alpha=0.05)
     save_acf_csv(
-        f"acf_Jsim_abl_{i}.csv",
+        f"acf_Jsim_{i}.csv",
         acf_vals,
         confint,
         lags,
@@ -347,7 +347,7 @@ for i in range(N):
 
     acf_vals, confint = acf(J_hat_abl**2, nlags=max_lags, fft=False, alpha=0.05)
     save_acf_csv(
-        f"acf_Jsimsqrd_abl_{i}.csv",
+        f"acf_Jsimsqrd_{i}.csv",
         acf_vals,
         confint,
         lags,
