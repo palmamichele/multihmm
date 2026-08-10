@@ -336,9 +336,6 @@ for out_path in ["out", "out_abl"]:
             ])
         
 
-
-
-
     distance_matrix = np.zeros((N, N))
     for model_i, model_j in itertools.combinations(aligned_transitions, 2):
 
