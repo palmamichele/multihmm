@@ -158,7 +158,8 @@ def fpt_from_log_returns(log_returns, rho=1.005):
     for start in range(n): #investment starting time t
         cum = 0.0
 
-        for tau in range(1, n-start):
+        for tau in range(1, n-start+1):
+            
             #cum = sum(log_returns[start : start + tau])
             cum += log_returns[start + tau - 1]
 

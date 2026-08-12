@@ -213,7 +213,7 @@ for K in hidden_candidates:
 
 
         else:
-            model =hmm.CategoricalHMM(n_components=K, n_iter=max_iterations, random_state=seed, n_features=n_symbols, init_params='e',  params='te')
+            model =hmm.CategoricalHMM(n_components=K, n_iter=max_iterations, random_state=seed, n_features=n_symbols, init_params='e',  params='e')
             #change params to 'e' for fixing the transition matrix.
             model.transmat_ = common_transition
             model.startprob_ = common_initial_distr
@@ -233,12 +233,18 @@ for K in hidden_candidates:
         n_obs = len(X_counts)
         M = model.n_features
 
-        #n. free parameters
-        n_params = (
-            (K - 1) +          #initial state probabilities
-            K * (K - 1) +      #transition matrix
-            K * (M - 1)        #emission probabilities
-        )
+
+        if i == 0:
+            n_params = (
+                (K - 1) +
+                K * (K - 1) +
+                K * (M - 1)
+            )
+        else:
+            n_params = (
+                (K - 1) +
+                K * (M - 1)
+            )
 
         aic = 2 * n_params - 2 * log_likelihood
         bic = n_params * np.log(n_obs) - 2 * log_likelihood
